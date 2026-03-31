@@ -69,7 +69,34 @@ export function Nav() {
               <a
                 key={`mobile-link-${idx}`}
                 href={item.link}
-                onClick={() => setIsMobileMenuOpen(false)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsMobileMenuOpen(false);
+                  const id = item.link.replace("#", "");
+                  setTimeout(() => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    const targetY = el.getBoundingClientRect().top + window.scrollY - 80;
+                    const startY = window.scrollY;
+                    const diff = targetY - startY;
+                    const duration = 800;
+                    let startTime: number | null = null;
+                    function easeInOutCubic(t: number): number {
+                      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+                    }
+                    function step(timestamp: number) {
+                      if (!startTime) startTime = timestamp;
+                      const elapsed = timestamp - startTime;
+                      const progress = Math.min(elapsed / duration, 1);
+                      const ease = easeInOutCubic(progress);
+                      window.scrollTo(0, startY + diff * ease);
+                      if (progress < 1) {
+                        requestAnimationFrame(step);
+                      }
+                    }
+                    requestAnimationFrame(step);
+                  }, 150);
+                }}
                 className="relative text-neutral-600 dark:text-neutral-300"
               >
                 <span className="block font-semibold">{item.name}</span>

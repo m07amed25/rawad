@@ -11,6 +11,37 @@ import {
 import React, { useRef, useState } from "react";
 import Image from "next/image";
 
+
+function smoothScrollTo(targetId: string) {
+  const el = document.getElementById(targetId);
+  if (!el) return;
+
+  const targetY = el.getBoundingClientRect().top + window.scrollY - 80;
+  const startY = window.scrollY;
+  const diff = targetY - startY;
+  const duration = 800;
+  let startTime: number | null = null;
+
+  function easeInOutCubic(t: number): number {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function step(timestamp: number) {
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = easeInOutCubic(progress);
+
+    window.scrollTo(0, startY + diff * ease);
+
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    }
+  }
+
+  requestAnimationFrame(step);
+}
+
 interface NavbarProps {
   children: React.ReactNode;
   className?: string;
@@ -127,8 +158,13 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
       {items.map((item, idx) => (
         <a
           onMouseEnter={() => setHovered(idx)}
-          onClick={onItemClick}
-          className="relative px-4 py-2 transition-colors duration-150"
+          onClick={(e) => {
+            e.preventDefault();
+            const id = item.link.replace("#", "");
+            smoothScrollTo(id);
+            onItemClick?.();
+          }}
+          className="relative px-4 py-2 transition-colors duration-150 cursor-pointer"
           key={`link-${idx}`}
           href={item.link}
         >
