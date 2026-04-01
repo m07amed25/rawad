@@ -71,7 +71,7 @@ export const metadata: Metadata = {
       "نظام الامتحانات الإلكتروني للطلاب وذوي الإعاقة. تمنحك الحرية وتدعم احتياجاتك.",
     images: ["/images/logo.png"],
   },
-  metadataBase: new URL("https://rawad.app"),
+  metadataBase: new URL("https://rawad-mu.vercel.app"),
   category: "education",
 };
 
