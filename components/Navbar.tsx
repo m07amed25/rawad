@@ -46,8 +46,12 @@ export function Nav() {
           <NavbarLogo />
           <NavItems items={navItems} />
           <div className="flex items-center gap-4">
-            <NavbarButton variant="secondary">انشاء حساب</NavbarButton>
-            <NavbarButton variant="primary">تسجيل الدخول</NavbarButton>
+            <NavbarButton href="/auth/sign-up" variant="secondary">
+              انشاء حساب
+            </NavbarButton>
+            <NavbarButton href="/auth/sign-in" variant="primary">
+              تسجيل الدخول
+            </NavbarButton>
           </div>
         </NavBody>
 
@@ -104,6 +108,7 @@ export function Nav() {
             ))}
             <div className="flex w-full flex-col gap-4">
               <NavbarButton
+                href="/auth/sign-up"
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
                 className="w-full"
@@ -111,6 +116,7 @@ export function Nav() {
                 انشاء حساب
               </NavbarButton>
               <NavbarButton
+                href="/auth/sign-in"
                 onClick={() => setIsMobileMenuOpen(false)}
                 variant="primary"
                 className="w-full"

@@ -1,0 +1,7 @@
+Resp: 500 Text: 
+Resp: 500 Text: 
+Resp: 401 Text: {"message":"Invalid email or password","code":"INVALID_EMAIL_OR_PASSWORD"}
+Resp: 401 Text: {"message":"Invalid email or password","code":"INVALID_EMAIL_OR_PASSWORD"}
+Resp: 400 Text: {"message":"Username is too short","code":"USERNAME_TOO_SHORT"}
+Resp: 400 Text: {"message":"Password too short","code":"PASSWORD_TOO_SHORT"}
+Resp: 422 Text: {"message":"User already exists. Use another email.","code":"USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL"}

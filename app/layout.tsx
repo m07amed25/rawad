@@ -3,7 +3,7 @@ import { Cairo } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import React from "react";
-import { Nav } from "@/components/Navbar";
+import { ConditionalNav } from "@/components/ConditionalNav";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -81,7 +81,7 @@ export default function RootLayout({
   return (
     <html lang="ar">
       <body className={`${cairo.variable} ${aquatico.variable}`}>
-        <Nav />
+        <ConditionalNav />
         {children}
       </body>
     </html>
