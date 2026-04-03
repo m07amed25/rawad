@@ -152,7 +152,7 @@ export default async function ProfilePage() {
           <div className="absolute top-4 right-10 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
           <div className="absolute top-1/2 left-1/3 w-40 h-40 bg-indigo-400/10 rounded-full blur-3xl" />
           {/* Diagonal light streak */}
-          <div className="absolute inset-0 bg-linear-to-tr from-transparent via-white/[0.03] to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-tr from-transparent via-white/3 to-transparent" />
         </div>
 
         {/* Profile section */}
