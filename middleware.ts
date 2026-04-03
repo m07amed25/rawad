@@ -1,62 +1,168 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+/**
+ * ═══════════════════════════════════════════════════════════════
+ *  middleware.ts — The Ultimate Route Protection Middleware
+ *  ─────────────────────────────────────────────────────────────
+ *  Uses Better-Auth's /api/auth/get-session to validate the
+ *  session cookie on every navigation. All decisions are made
+ *  at the edge BEFORE any page code executes.
+ *
+ *  Rules:
+ *   1. Unauthenticated → /auth/sign-in   (for protected routes)
+ *   2. STUDENT → blocked from /teacher/*  (redirect → /student)
+ *   3. TEACHER → blocked from /student/*  (redirect → /teacher)
+ *   4. Onboarding incomplete → /welcome/<role>
+ *   5. Profile incomplete → /<role>/complete-profile
+ *   6. Authenticated on /auth/* → redirect to dashboard
+ * ═══════════════════════════════════════════════════════════════
+ */
+
+// ── Helper: build a redirect response ─────────────────────────
+function redirect(request: NextRequest, path: string) {
+  return NextResponse.redirect(new URL(path, request.url));
+}
+
+// ── Helper: determine the dashboard root for a role ───────────
+function dashboardFor(role: string | undefined): string {
+  if (role === "STUDENT") return "/student";
+  if (role === "TEACHER") return "/teacher";
+  return "/";
+}
+
+// ── Routes that require NO authentication ─────────────────────
+// (Public routes — landing page, auth pages, API, static assets)
+const PUBLIC_PREFIXES = ["/auth", "/api", "/_next", "/fonts", "/images"];
+
+function isPublicRoute(pathname: string): boolean {
+  // The landing page "/" is public
+  if (pathname === "/") return true;
+  return PUBLIC_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
+// ── Routes that require authentication ────────────────────────
+// Everything under /student, /teacher, /welcome is protected
+const PROTECTED_PREFIXES = ["/student", "/teacher", "/welcome"];
+
+function isProtectedRoute(pathname: string): boolean {
+  return PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
+
 export async function middleware(request: NextRequest) {
-  let session = null;
-  // Try to get session via native fetch
+  const { pathname } = request.nextUrl;
+
+  // ─── 0. Skip public / static routes early (lightweight) ────
+  if (!isProtectedRoute(pathname) && isPublicRoute(pathname)) {
+    return NextResponse.next();
+  }
+
+  // ─── 1. Fetch the session from Better-Auth ─────────────────
+  let session: {
+    user?: {
+      role?: string;
+      onboardingCompleted?: boolean;
+      isProfileComplete?: boolean;
+    };
+  } | null = null;
+
   try {
     const res = await fetch(`${request.nextUrl.origin}/api/auth/get-session`, {
-      headers: {
-        cookie: request.headers.get("cookie") || "",
-      },
+      headers: { cookie: request.headers.get("cookie") || "" },
     });
-    
     if (res.ok) {
       session = await res.json();
     }
   } catch {
-    // Ignore fetch errors
+    // Network error — treat as unauthenticated for safety
   }
 
-  const pathname = request.nextUrl.pathname;
+  const user = session?.user;
+  const role = user?.role; // "STUDENT" | "TEACHER" | undefined
+  const completed = user?.onboardingCompleted ?? false;
+  const profileComplete = user?.isProfileComplete ?? false;
+
   const isAuthRoute = pathname.startsWith("/auth");
   const isWelcomeRoute = pathname.startsWith("/welcome");
+  const isStudentRoute = pathname.startsWith("/student");
+  const isTeacherRoute = pathname.startsWith("/teacher");
 
-  if (!session) {
-    if (isWelcomeRoute /* || pathname === "/" // Keeping "/" accessible or protected based on requirements */) {
-      // Typically root should be protected if no session in onboarding apps 
-      // but let's assume root is protected.
-      if (pathname === "/") return NextResponse.redirect(new URL("/auth/sign-in", request.url));
-      return NextResponse.redirect(new URL("/auth/sign-in", request.url));
+  // ─── 2. NOT LOGGED IN ──────────────────────────────────────
+  if (!session || !user) {
+    // Allow access to auth pages (sign-in, sign-up, etc.)
+    if (isAuthRoute) return NextResponse.next();
+
+    // Block all protected routes → redirect to sign-in
+    if (isProtectedRoute(pathname)) {
+      return redirect(request, "/auth/sign-in");
     }
+
+    // Everything else passes through
     return NextResponse.next();
   }
 
-  // If logged in:
-  const isStudent = session.user?.role === "STUDENT";
-  const isTeacher = session.user?.role === "TEACHER";
-  const completed = session.user?.onboardingCompleted;
+  // ═══════════════════════════════════════════════════════════
+  //  From here on, the user IS authenticated.
+  // ═══════════════════════════════════════════════════════════
 
+  // ─── 3. Authenticated user on /auth/* → go to dashboard ────
   if (isAuthRoute) {
-    if (isStudent) return NextResponse.redirect(new URL("/student", request.url));
-    if (isTeacher) return NextResponse.redirect(new URL("/teacher", request.url));
-    return NextResponse.redirect(new URL("/", request.url));
+    return redirect(request, dashboardFor(role));
   }
 
-  if (!completed && !isWelcomeRoute && pathname !== "/") {
-    if (isStudent) return NextResponse.redirect(new URL("/welcome/student", request.url));
-    if (isTeacher) return NextResponse.redirect(new URL("/welcome/teacher", request.url));
+  // ─── 4. STRICT ROLE-BASED ROUTE BLOCKING ───────────────────
+  //  STUDENT cannot access /teacher/* — redirect to /student
+  //  TEACHER cannot access /student/* — redirect to /teacher
+  if (role === "STUDENT" && isTeacherRoute) {
+    return redirect(request, "/student");
+  }
+  if (role === "TEACHER" && isStudentRoute) {
+    return redirect(request, "/teacher");
   }
 
+  // ─── 5. ONBOARDING GATE ────────────────────────────────────
+  //  If onboarding is NOT complete, force user to /welcome/<role>
+  if (!completed && !isWelcomeRoute) {
+    if (role === "STUDENT") return redirect(request, "/welcome/student");
+    if (role === "TEACHER") return redirect(request, "/welcome/teacher");
+  }
+
+  //  If onboarding IS complete, block access to /welcome pages
   if (completed && isWelcomeRoute) {
-    if (isStudent) return NextResponse.redirect(new URL("/student", request.url));
-    if (isTeacher) return NextResponse.redirect(new URL("/teacher", request.url));
-    return NextResponse.redirect(new URL("/", request.url));
+    return redirect(request, dashboardFor(role));
   }
 
+  // ─── 6. PROFILE COMPLETION GATE ────────────────────────────
+  //  After onboarding, if profile is incomplete, force user to
+  //  /<role>/complete-profile (but allow that page itself).
+  if (completed && !profileComplete) {
+    const completeProfilePath = `/${role === "STUDENT" ? "student" : "teacher"}/complete-profile`;
+
+    if (
+      pathname !== completeProfilePath &&
+      (isStudentRoute || isTeacherRoute)
+    ) {
+      return redirect(request, completeProfilePath);
+    }
+  }
+
+  //  If profile IS complete, block re-visiting complete-profile
+  if (completed && profileComplete) {
+    if (
+      pathname === "/student/complete-profile" ||
+      pathname === "/teacher/complete-profile"
+    ) {
+      return redirect(request, dashboardFor(role));
+    }
+  }
+
+  // ─── 7. All checks passed — allow the request ─────────────
   return NextResponse.next();
 }
 
+// ── Matcher: run middleware on all routes except static assets ─
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|fonts/|images/|api/).*)",
+  ],
 };

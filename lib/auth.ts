@@ -37,6 +37,12 @@ export const auth = betterAuth({
         input: true,
         defaultValue: false,
       },
+      isProfileComplete: {
+        type: "boolean",
+        required: false,
+        input: false,
+        defaultValue: false,
+      },
       nationalId: {
         type: "string",
         required: false,
@@ -47,7 +53,7 @@ export const auth = betterAuth({
         required: false,
         input: true,
       },
-      studentId: {
+      studentCode: {
         type: "string",
         required: false,
         input: true,
@@ -56,6 +62,21 @@ export const auth = betterAuth({
         type: "string",
         required: false,
         input: true,
+      },
+      college: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      department: {
+        type: "string",
+        required: false,
+        input: false,
+      },
+      academicYear: {
+        type: "string",
+        required: false,
+        input: false,
       },
     },
   },

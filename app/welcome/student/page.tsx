@@ -31,7 +31,7 @@ export default function StudentWelcomePage() {
   const [formData, setFormData] = useState({
     nationalId: "",
     universityName: "",
-    studentId: "",
+    studentCode: "",
     disabilityType: "NONE",
   });
   const formRef = useRef<HTMLDivElement>(null);
@@ -248,8 +248,8 @@ export default function StudentWelcomePage() {
                 <AuthInput
                   label="الرقم الطلابي / الكود"
                   required
-                  name="studentId"
-                  value={formData.studentId}
+                  name="studentCode"
+                  value={formData.studentCode}
                   onChange={handleChange}
                   placeholder="أدخل الرقم الطلابي"
                   icon={<IconHash className="size-4" />}
@@ -275,7 +275,7 @@ export default function StudentWelcomePage() {
                     <option value="HEARING">حركية</option>
                     <option value="MOTOR">سمعية</option>
                     <option value="MULTIPLE">متعددة</option>
-                    <option value="LEARNING_DIFFICULTIES">صعوبات تعلم</option>
+                    <option value="LEARNING">صعوبات تعلم</option>
                     <option value="VISUAL">بصرية</option>
                   </select>
                 </div>

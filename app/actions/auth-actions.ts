@@ -10,7 +10,7 @@ import { DisabilityType } from "@prisma/client";
 export async function completeStudentProfile(data: {
   nationalId: string;
   universityName: string;
-  studentId: string;
+  studentCode: string;
   disabilityType: string;
 }) {
   const session = await auth.api.getSession({
@@ -33,9 +33,9 @@ export async function completeStudentProfile(data: {
     return { error: "يرجى إدخال اسم الجامعة" };
   }
 
-  // Validate studentId
-  const studentId = data.studentId?.trim();
-  if (!studentId) {
+  // Validate studentCode
+  const studentCode = data.studentCode?.trim();
+  if (!studentCode) {
     return { error: "يرجى إدخال رقم الطالب" };
   }
 
@@ -52,7 +52,7 @@ export async function completeStudentProfile(data: {
         onboardingCompleted: true,
         nationalId,
         universityName,
-        studentId,
+        studentCode,
         disabilityType: data.disabilityType as DisabilityType,
       },
     });

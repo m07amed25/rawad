@@ -8,42 +8,76 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
 enum Role {
   STUDENT
   TEACHER
 }
 
 enum DisabilityType {
+  NONE
   HEARING
   MOTOR
-  MULTIPLE
-  LEARNING_DIFFICULTIES
   VISUAL
-  NONE
+  LEARNING
+  MULTIPLE
 }
 
+enum ExamStatus {
+  DRAFT
+  ACTIVE
+  ENDED
+}
+
+enum QuestionType {
+  MCQ
+  ESSAY
+}
+
+enum ResultStatus {
+  PASSED
+  FAILED
+  UNDER_GRADING
+}
+
+// ─── Better-Auth Base Models ─────────────────────────────────────────────────
+
 model User {
-  id                  String    @id @default(uuid())
-  name                String
-  email               String    @unique
-  emailVerified       Boolean   @default(false)
-  image               String?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  
-  // Custom fields
-  username            String    @unique
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Custom profile fields
+  username            String?         @unique
   displayUsername     String?
   role                Role
-  onboardingCompleted Boolean   @default(false)
-  nationalId          String?   @unique
+  onboardingCompleted Boolean         @default(false)
+  isProfileComplete   Boolean         @default(false)
+  nationalId          String?         @unique
   universityName      String?
-  studentId           String?
+  studentCode         String?         @unique
   disabilityType      DisabilityType?
+  college             String?
+  department          String?
+  academicYear        String?
 
   // Better-Auth relations
-  sessions            Session[]
-  accounts            Account[]
+  sessions Session[]
+  accounts Account[]
+
+  // Application relations
+  exams          Exam[]          @relation("TeacherExams")
+  subjects       Subject[]       @relation("TeacherSubjects")
+  results        Result[]        @relation("StudentResults")
+  studentAnswers StudentAnswer[] @relation("StudentAnswers")
+
+  @@index([role])
+  @@index([email])
 }
 
 model Session {
@@ -57,13 +91,16 @@ model Session {
   updatedAt DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
 }
 
 model Account {
-  id                    String    @id @default(uuid())
-  userId                String
-  accountId             String
-  providerId            String
+  id         String @id @default(uuid())
+  userId     String
+  accountId  String
+  providerId String
 
   accessToken           String?
   refreshToken          String?
@@ -76,6 +113,8 @@ model Account {
   updatedAt             DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Verification {
@@ -85,4 +124,122 @@ model Verification {
   expiresAt  DateTime
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+}
+
+model Subject {
+  id           String   @id @default(uuid())
+  name         String
+  academicYear String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  teacherId String
+  teacher   User   @relation("TeacherSubjects", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  exams Exam[]
+
+  @@index([teacherId])
+}
+
+model Exam {
+  id        String     @id @default(uuid())
+  title     String
+  subject   String
+  duration  Int // duration in minutes
+  date      DateTime // exam start date+time (availability start)
+  endDate   DateTime? // exam end date+time (availability end)
+  status    ExamStatus @default(DRAFT)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  teacherId String
+  teacher   User   @relation("TeacherExams", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  subjectId String?
+  subjectRef Subject? @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  questions      Question[]
+  results        Result[]
+  studentAnswers StudentAnswer[]
+
+  @@index([teacherId])
+  @@index([status])
+  @@index([date])
+  @@index([subjectId])
+}
+
+model Question {
+  id    String       @id @default(uuid())
+  text  String
+  type  QuestionType
+  score Float
+
+  examId String
+  exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  options        Option[]
+  studentAnswers StudentAnswer[]
+
+  @@index([examId])
+}
+
+model Option {
+  id        String  @id @default(uuid())
+  text      String
+  isCorrect Boolean @default(false)
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  studentAnswers StudentAnswer[]
+
+  @@index([questionId])
+}
+
+model Result {
+  id              String       @id @default(uuid())
+  score           Float
+  maxScore        Float
+  correctAnswers  Int
+  wrongAnswers    Int
+  timeTaken       Int          // time taken in seconds
+  violationsCount Int          @default(0)
+  status          ResultStatus @default(UNDER_GRADING)
+  createdAt       DateTime     @default(now())
+
+  studentId String
+  student   User   @relation("StudentResults", fields: [studentId], references: [id], onDelete: Cascade)
+
+  examId String
+  exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, examId])
+  @@index([studentId])
+  @@index([examId])
+}
+
+model StudentAnswer {
+  id           String   @id @default(uuid())
+  textAnswer   String? // for essay-type questions
+  isCorrect    Boolean?
+  marksAwarded Float?
+
+  studentId String
+  student   User   @relation("StudentAnswers", fields: [studentId], references: [id], onDelete: Cascade)
+
+  examId String
+  exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  optionId String?
+  option   Option? @relation(fields: [optionId], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, examId, questionId])
+  @@index([studentId])
+  @@index([examId])
+  @@index([questionId])
 }

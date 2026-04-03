@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import React from "react";
 import { ConditionalNav } from "@/components/ConditionalNav";
+import { Toaster } from "@/components/ui/sonner";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -79,10 +80,12 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ar">
+    <html lang="ar" data-scroll-behavior="smooth">
       <body className={`${cairo.variable} ${aquatico.variable}`}>
         <ConditionalNav />
         {children}
+        {/* RTL-friendly Sonner toaster — position top-right maps to top-left in RTL */}
+        <Toaster position="top-right" dir="rtl" richColors closeButton />
       </body>
     </html>
   );
