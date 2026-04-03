@@ -9,6 +9,7 @@ import {
   type CreateExamServerInput,
 } from "@/lib/validations";
 import { z } from "zod";
+import { sendExamNotificationEmails } from "@/lib/mailer";
 
 // ─── Create Full Exam Action ─────────────────────────────────
 // Creates an exam with all its questions and options in a single
@@ -69,6 +70,7 @@ export async function createFullExam(data: CreateExamServerInput) {
             text: q.text,
             type: q.type,
             score: q.score,
+            signLanguageUrl: q.signLanguageUrl || null,
             options: {
               create:
                 q.type === "MCQ"
@@ -90,7 +92,13 @@ export async function createFullExam(data: CreateExamServerInput) {
     return { success: true, examId: exam.id };
   } catch (err: unknown) {
     console.error("[createFullExam] Unexpected error:", err);
-    return { error: "حدث خطأ أثناء إنشاء الامتحان، يرجى المحاولة لاحقاً" };
+    const detail =
+      process.env.NODE_ENV === "development" && err instanceof Error
+        ? ` (${err.message})`
+        : "";
+    return {
+      error: `حدث خطأ أثناء إنشاء الامتحان، يرجى المحاولة لاحقاً${detail}`,
+    };
   }
 }
 
@@ -108,7 +116,16 @@ export async function toggleExamStatus(examId: string) {
 
   const exam = await prisma.exam.findUnique({
     where: { id: examId, teacherId: session.user.id },
-    select: { status: true },
+    select: {
+      status: true,
+      title: true,
+      subject: true,
+      date: true,
+      duration: true,
+      teacher: {
+        select: { name: true, universityName: true, department: true },
+      },
+    },
   });
 
   if (!exam) {
@@ -125,6 +142,50 @@ export async function toggleExamStatus(examId: string) {
     where: { id: examId },
     data: { status: newStatus },
   });
+
+  // ── Send notification emails when activating (DRAFT → ACTIVE) ──
+  if (
+    newStatus === "ACTIVE" &&
+    exam.teacher.universityName &&
+    exam.teacher.department
+  ) {
+    // Fire-and-forget: don't block the response on email delivery
+    const examDate = exam.date.toLocaleDateString("ar-EG", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    const examTime = exam.date.toLocaleTimeString("ar-EG", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    prisma.user
+      .findMany({
+        where: {
+          role: "STUDENT",
+          universityName: exam.teacher.universityName,
+          department: exam.teacher.department,
+          isProfileComplete: true,
+        },
+        select: { email: true, name: true },
+      })
+      .then((students) => {
+        if (students.length === 0) return;
+        return sendExamNotificationEmails(students, {
+          examTitle: exam.title,
+          subjectName: exam.subject,
+          examDate,
+          examTime,
+          durationMinutes: exam.duration,
+          teacherName: exam.teacher.name,
+        });
+      })
+      .catch((err) => {
+        console.error("[toggleExamStatus] Failed to send notifications:", err);
+      });
+  }
 
   revalidatePath("/teacher/exams");
   return { success: true, newStatus };

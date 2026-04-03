@@ -171,10 +171,11 @@ model Exam {
 }
 
 model Question {
-  id    String       @id @default(uuid())
-  text  String
-  type  QuestionType
-  score Float
+  id              String       @id @default(uuid())
+  text            String
+  type            QuestionType
+  score           Float
+  signLanguageUrl String?
 
   examId String
   exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)

@@ -57,7 +57,6 @@ export default async function StudentDashboardPage() {
   const studentId = session.user.id;
   const universityName = session.user.universityName;
   const department = session.user.department;
-  const studentAcademicYear = session.user.academicYear;
 
   // ── 2. Parallel data fetching ──────────────────────────────
   const [availableExams, previousResults] = await Promise.all([
@@ -71,14 +70,6 @@ export default async function StudentDashboardPage() {
           ...(universityName ? { universityName } : {}),
           ...(department ? { department } : {}),
         },
-        // Filter by academic year via subject relation
-        ...(studentAcademicYear
-          ? {
-              subjectRef: {
-                academicYear: studentAcademicYear,
-              },
-            }
-          : {}),
         // Exclude exams the student already has a result for
         NOT: {
           results: {
@@ -179,7 +170,10 @@ export default async function StudentDashboardPage() {
               const questionsCount = exam.questions.length;
               const startDate = new Date(exam.date);
               const endDate = exam.endDate ? new Date(exam.endDate) : null;
-              const timeFmt: Intl.DateTimeFormatOptions = { hour: "2-digit", minute: "2-digit" };
+              const timeFmt: Intl.DateTimeFormatOptions = {
+                hour: "2-digit",
+                minute: "2-digit",
+              };
               const formattedDate = startDate.toLocaleDateString("ar-SA");
               const timeStr = endDate
                 ? `${startDate.toLocaleTimeString("ar-SA", timeFmt)} — ${endDate.toLocaleTimeString("ar-SA", timeFmt)}`
@@ -251,7 +245,9 @@ export default async function StudentDashboardPage() {
           <div className="flex flex-col items-center justify-center py-16 text-gray-400 bg-white rounded-2xl border border-gray-200">
             <Inbox className="w-12 h-12 mb-3" />
             <p className="text-lg font-medium">لا توجد نتائج سابقة</p>
-            <p className="text-sm mt-1">ستظهر نتائجك هنا بعد إتمام أول امتحان</p>
+            <p className="text-sm mt-1">
+              ستظهر نتائجك هنا بعد إتمام أول امتحان
+            </p>
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">

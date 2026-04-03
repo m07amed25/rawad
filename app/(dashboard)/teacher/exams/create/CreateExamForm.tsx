@@ -24,6 +24,7 @@ import {
   CheckCheck,
   UserCheck,
   Filter,
+  Video,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -185,6 +186,26 @@ function QuestionCard({
         </div>
 
         <Separator />
+
+        {/* Sign Language Video URL (optional) */}
+        <div className="space-y-2">
+          <Label htmlFor={`q-sign-lang-${index}`} className="flex items-center gap-2">
+            <Video className="size-4 text-muted-foreground" />
+            رابط فيديو لغة الإشارة (اختياري)
+          </Label>
+          <Input
+            id={`q-sign-lang-${index}`}
+            type="url"
+            dir="ltr"
+            placeholder="https://www.youtube.com/watch?v=... أو رابط فيديو مباشر"
+            className="h-8 text-sm"
+            {...register(`questions.${index}.signLanguageUrl`)}
+          />
+          <FieldError message={questionErrors?.signLanguageUrl?.message as string} />
+          <p className="text-xs text-muted-foreground">
+            ألصق رابط فيديو يوتيوب أو رابط فيديو مباشر يترجم السؤال إلى لغة الإشارة
+          </p>
+        </div>
 
         {/* Dynamic rendering based on type */}
         {questionType === "ESSAY" ? (
@@ -732,6 +753,7 @@ export default function CreateExamPage({
         text: q.text,
         type: q.type,
         score: q.score,
+        signLanguageUrl: q.signLanguageUrl || undefined,
         options:
           q.type === "MCQ"
             ? q.options.map((opt, i) => ({

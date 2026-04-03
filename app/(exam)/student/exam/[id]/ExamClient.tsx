@@ -51,10 +51,24 @@ import {
   Volume2,
   VolumeX,
   Contrast,
-  Settings,
+  Hand,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { submitExam } from "@/app/actions/grading";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // ─── Disability type (matches Prisma DisabilityType enum) ─────────────────────
 
@@ -79,6 +93,7 @@ type MCQQuestion = {
   text: string;
   options: SanitizedOption[];
   points: number;
+  signLanguageUrl?: string | null;
 };
 
 type EssayQuestion = {
@@ -87,6 +102,7 @@ type EssayQuestion = {
   text: string;
   maxChars?: number;
   points: number;
+  signLanguageUrl?: string | null;
 };
 
 type Question = MCQQuestion | EssayQuestion;
@@ -698,37 +714,47 @@ function ReviewSummary({
 // ─── Accessibility Toolbar ───────────────────────────────────────────────────
 
 /**
- * Per-question accessibility toolbar. Conditionally shows tools based on
- * the student's disabilityType:
- * - VISUAL / MULTIPLE: Zoom In, Zoom Out, Play Audio (prominent)
- * - LEARNING / MULTIPLE: High Contrast toggle (prominent)
- * - All others: tools hidden behind a settings cog button
+ * Extracts a YouTube video ID from common YouTube URL patterns.
+ * Returns null if not a YouTube URL.
+ */
+function getYouTubeId(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname.includes("youtube.com")) {
+      return u.searchParams.get("v");
+    }
+    if (u.hostname === "youtu.be") {
+      return u.pathname.slice(1);
+    }
+  } catch {
+    // not a valid URL
+  }
+  return null;
+}
+
+/**
+ * Per-question accessibility toolbar – always visible for all students.
+ * Provides: Zoom In/Out, TTS audio, High Contrast, and Sign Language video.
  */
 function AccessibilityToolbar({
-  disabilityType,
   questionText,
   optionsText,
+  signLanguageUrl,
   fontSizeMultiplier,
   setFontSizeMultiplier,
   highContrastMode,
   setHighContrastMode,
 }: {
-  disabilityType: DisabilityType;
   questionText: string;
   optionsText: string;
+  signLanguageUrl?: string | null;
   fontSizeMultiplier: number;
   setFontSizeMultiplier: React.Dispatch<React.SetStateAction<number>>;
   highContrastMode: boolean;
   setHighContrastMode: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  // Determine which tools should be prominently visible
-  const showVisualTools =
-    disabilityType === "VISUAL" || disabilityType === "MULTIPLE";
-  const showLearningTools =
-    disabilityType === "LEARNING" || disabilityType === "MULTIPLE";
-
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [signLangOpen, setSignLangOpen] = useState(false);
 
   // Track speech synthesis state
   useEffect(() => {
@@ -764,88 +790,171 @@ function AccessibilityToolbar({
 
   // Shared button styles
   const btnBase =
-    "size-8 rounded-lg flex items-center justify-center transition-all duration-200 border";
+    "size-9 rounded-xl flex items-center justify-center transition-all duration-200 border shadow-sm";
   const btnDefault =
-    "border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700";
-  const btnActive = "border-blue-300 bg-blue-50 text-blue-600";
+    "border-gray-200 bg-white text-gray-600 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200";
+  const btnActive = "border-blue-300 bg-blue-50 text-blue-600 shadow-blue-100";
 
-  // Inline toolbar buttons JSX (not a component, to avoid re-mount on render)
-  const toolbarButtons = (
-    <div
-      className="flex items-center gap-1"
-      role="toolbar"
-      aria-label="أدوات إمكانية الوصول"
-    >
-      {/* Zoom In */}
-      <button
-        onClick={handleZoomIn}
-        className={cn(btnBase, btnDefault)}
-        title="تكبير النص (A+)"
-        aria-label="تكبير النص"
-        disabled={fontSizeMultiplier >= 1.5}
+  // Build the sign language video embed content
+  const signLangVideoContent = useMemo(() => {
+    if (!signLanguageUrl) return null;
+    const youtubeId = getYouTubeId(signLanguageUrl);
+    if (youtubeId) {
+      return (
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${youtubeId}?rel=0`}
+          title="فيديو لغة الإشارة"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="w-full aspect-video rounded-lg"
+        />
+      );
+    }
+    return (
+      <video
+        src={signLanguageUrl}
+        controls
+        className="w-full aspect-video rounded-lg"
+        aria-label="فيديو لغة الإشارة"
       >
-        <ZoomIn className="size-3.5" />
-      </button>
-      {/* Zoom Out */}
-      <button
-        onClick={handleZoomOut}
-        className={cn(btnBase, btnDefault)}
-        title="تصغير النص (A-)"
-        aria-label="تصغير النص"
-        disabled={fontSizeMultiplier <= 0.8}
-      >
-        <ZoomOut className="size-3.5" />
-      </button>
-      {/* Play / Stop Audio */}
-      <button
-        onClick={handlePlayAudio}
-        className={cn(btnBase, isSpeaking ? btnActive : btnDefault)}
-        title={isSpeaking ? "إيقاف القراءة" : "قراءة السؤال صوتياً"}
-        aria-label={isSpeaking ? "إيقاف القراءة" : "قراءة السؤال صوتياً"}
-      >
-        {isSpeaking ? (
-          <VolumeX className="size-3.5" />
-        ) : (
-          <Volume2 className="size-3.5" />
-        )}
-      </button>
-      {/* High Contrast */}
-      <button
-        onClick={handleHighContrast}
-        className={cn(btnBase, highContrastMode ? btnActive : btnDefault)}
-        title={highContrastMode ? "إيقاف التباين العالي" : "تباين عالٍ"}
-        aria-label={
-          highContrastMode ? "إيقاف التباين العالي" : "تفعيل التباين العالي"
-        }
-      >
-        <Contrast className="size-3.5" />
-      </button>
-    </div>
-  );
+        متصفحك لا يدعم تشغيل الفيديو.
+      </video>
+    );
+  }, [signLanguageUrl]);
 
-  // ── Prominent display for VISUAL / LEARNING / MULTIPLE ──
-  if (showVisualTools || showLearningTools) {
-    return toolbarButtons;
-  }
-
-  // ── Fallback: settings cog for all other students ──
+  // Always render prominently for all students
   return (
-    <div className="relative">
-      <button
-        onClick={() => setSettingsOpen((o) => !o)}
-        className={cn(btnBase, settingsOpen ? btnActive : btnDefault)}
-        title="أدوات إمكانية الوصول"
-        aria-label="فتح أدوات إمكانية الوصول"
-        aria-expanded={settingsOpen}
+    <TooltipProvider>
+      <div
+        className="flex items-center gap-2 rounded-xl border border-blue-100 bg-linear-to-l from-blue-50/80 to-slate-50/80 px-3 py-2 shadow-sm"
+        role="toolbar"
+        aria-label="أدوات إمكانية الوصول"
       >
-        <Settings className="size-3.5" />
-      </button>
-      {settingsOpen && (
-        <div className="absolute top-full mt-2 left-0 z-50 rounded-xl border border-gray-200 bg-white p-2 shadow-lg">
-          {toolbarButtons}
-        </div>
-      )}
-    </div>
+        <span className="text-xs font-semibold text-blue-500 ml-1 select-none whitespace-nowrap">
+          أدوات المساعدة
+        </span>
+
+        <span className="h-5 w-px bg-blue-200/60" />
+
+        {/* Zoom In */}
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <button
+                onClick={handleZoomIn}
+                className={cn(btnBase, btnDefault)}
+                aria-label="تكبير النص"
+                disabled={fontSizeMultiplier >= 1.5}
+              />
+            }
+          >
+            <ZoomIn className="size-4" />
+          </TooltipTrigger>
+          <TooltipContent>تكبير النص (A+)</TooltipContent>
+        </Tooltip>
+
+        {/* Zoom Out */}
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <button
+                onClick={handleZoomOut}
+                className={cn(btnBase, btnDefault)}
+                aria-label="تصغير النص"
+                disabled={fontSizeMultiplier <= 0.8}
+              />
+            }
+          >
+            <ZoomOut className="size-4" />
+          </TooltipTrigger>
+          <TooltipContent>تصغير النص (A-)</TooltipContent>
+        </Tooltip>
+
+        {/* Play / Stop Audio */}
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <button
+                onClick={handlePlayAudio}
+                className={cn(btnBase, isSpeaking ? btnActive : btnDefault)}
+                aria-label={
+                  isSpeaking ? "إيقاف القراءة" : "قراءة السؤال صوتياً"
+                }
+              />
+            }
+          >
+            {isSpeaking ? (
+              <VolumeX className="size-4" />
+            ) : (
+              <Volume2 className="size-4" />
+            )}
+          </TooltipTrigger>
+          <TooltipContent>
+            {isSpeaking ? "إيقاف القراءة" : "قراءة السؤال صوتياً"}
+          </TooltipContent>
+        </Tooltip>
+
+        {/* High Contrast */}
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <button
+                onClick={handleHighContrast}
+                className={cn(
+                  btnBase,
+                  highContrastMode ? btnActive : btnDefault,
+                )}
+                aria-label={
+                  highContrastMode
+                    ? "إيقاف التباين العالي"
+                    : "تفعيل التباين العالي"
+                }
+              />
+            }
+          >
+            <Contrast className="size-4" />
+          </TooltipTrigger>
+          <TooltipContent>
+            {highContrastMode ? "إيقاف التباين العالي" : "تباين عالٍ"}
+          </TooltipContent>
+        </Tooltip>
+
+        {/* Sign Language Video (only if URL provided) */}
+        {signLanguageUrl && (
+          <Dialog open={signLangOpen} onOpenChange={setSignLangOpen}>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <DialogTrigger
+                    render={
+                      <button
+                        className={cn(
+                          btnBase,
+                          signLangOpen ? btnActive : btnDefault,
+                        )}
+                        aria-label="عرض فيديو لغة الإشارة"
+                      />
+                    }
+                  />
+                }
+              >
+                <Hand className="size-4" />
+              </TooltipTrigger>
+              <TooltipContent>فيديو لغة الإشارة</TooltipContent>
+            </Tooltip>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>فيديو لغة الإشارة</DialogTitle>
+                <DialogDescription>
+                  ترجمة السؤال إلى لغة الإشارة
+                </DialogDescription>
+              </DialogHeader>
+              {signLangVideoContent}
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+    </TooltipProvider>
   );
 }
 
@@ -853,7 +962,6 @@ function AccessibilityToolbar({
 
 export default function ExamClient({
   exam,
-  disabilityType = "NONE",
 }: {
   exam: SanitizedExamData;
   disabilityType?: DisabilityType;
@@ -1233,8 +1341,8 @@ export default function ExamClient({
               </button>
             )}
 
-            {/* Question meta + Accessibility Toolbar */}
-            <div className="flex items-center justify-between mb-6">
+            {/* Question meta */}
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2.5">
                 <span className="text-base font-bold text-gray-900">
                   السؤال {currentIndex + 1}
@@ -1243,21 +1351,6 @@ export default function ExamClient({
                 <span className="text-base text-gray-400">
                   {totalQuestions}
                 </span>
-
-                {/* ── Accessibility Toolbar (per-question) ── */}
-                <AccessibilityToolbar
-                  disabilityType={disabilityType}
-                  questionText={currentQuestion.text}
-                  optionsText={
-                    currentQuestion.type === "MCQ"
-                      ? currentQuestion.options.map((o) => o.text).join(". ")
-                      : ""
-                  }
-                  fontSizeMultiplier={fontSizeMultiplier}
-                  setFontSizeMultiplier={setFontSizeMultiplier}
-                  highContrastMode={highContrastMode}
-                  setHighContrastMode={setHighContrastMode}
-                />
 
                 <Badge
                   variant="secondary"
@@ -1305,6 +1398,23 @@ export default function ExamClient({
                   {flagged.has(currentQuestion.id) ? "مُعلّم" : "علّم للمراجعة"}
                 </span>
               </button>
+            </div>
+
+            {/* ── Accessibility Toolbar (per-question) ── */}
+            <div className="mb-5">
+              <AccessibilityToolbar
+                questionText={currentQuestion.text}
+                optionsText={
+                  currentQuestion.type === "MCQ"
+                    ? currentQuestion.options.map((o) => o.text).join(". ")
+                    : ""
+                }
+                signLanguageUrl={currentQuestion.signLanguageUrl}
+                fontSizeMultiplier={fontSizeMultiplier}
+                setFontSizeMultiplier={setFontSizeMultiplier}
+                highContrastMode={highContrastMode}
+                setHighContrastMode={setHighContrastMode}
+              />
             </div>
 
             {/* Question text (select-none to block text selection) */}

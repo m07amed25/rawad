@@ -94,6 +94,7 @@ export default async function ExamPage({
           text: true,
           type: true,
           score: true,
+          signLanguageUrl: true,
           options: {
             select: {
               id: true,
@@ -108,7 +109,6 @@ export default async function ExamPage({
     },
   });
 
-  // ── 4. Validate exam exists and is active ──────────────────
   if (!exam) {
     notFound();
   }
@@ -117,7 +117,6 @@ export default async function ExamPage({
     notFound();
   }
 
-  // ── 5. Build sanitized payload ─────────────────────────────
   const totalPoints = exam.questions.reduce((sum, q) => sum + q.score, 0);
 
   const sanitizedExam: SanitizedExamData = {
@@ -134,6 +133,7 @@ export default async function ExamPage({
           type: "MCQ" as const,
           text: q.text,
           points: q.score,
+          signLanguageUrl: q.signLanguageUrl,
           options: q.options.map((opt) => ({
             id: opt.id,
             text: opt.text,
@@ -145,6 +145,7 @@ export default async function ExamPage({
         type: "ESSAY" as const,
         text: q.text,
         points: q.score,
+        signLanguageUrl: q.signLanguageUrl,
       };
     }),
   };

@@ -56,6 +56,11 @@ const serverQuestionSchema = z
     type: z.nativeEnum(QuestionType),
     score: z.number().positive("الدرجة يجب أن تكون أكبر من صفر"),
     options: z.array(serverOptionSchema).default([]),
+    signLanguageUrl: z
+      .string()
+      .url("رابط غير صالح")
+      .optional()
+      .or(z.literal("")),
   })
   .refine(
     (q) => {
@@ -118,6 +123,11 @@ const clientQuestionSchema = z
       .array(clientOptionSchema)
       .default([{ text: "" }, { text: "" }, { text: "" }, { text: "" }]),
     correctOption: z.coerce.number().default(0),
+    signLanguageUrl: z
+      .string()
+      .url("رابط غير صالح")
+      .optional()
+      .or(z.literal("")),
   })
   .superRefine((q, ctx) => {
     if (q.type === "MCQ") {
