@@ -52,9 +52,12 @@ import {
   VolumeX,
   Contrast,
   Hand,
+  Play,
+  Keyboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { submitExam } from "@/app/actions/grading";
+import { reportCheatViolation } from "@/app/actions/proctoring";
 import {
   Dialog,
   DialogContent,
@@ -310,24 +313,69 @@ function useAutoSave(
 }
 
 /**
- * useAntiCheat — Tab-switch detector + copy/cut/paste blocker + keyboard guard.
- * Fires sonner toasts instead of a custom modal.
+ * useProctoring — Full browser lockdown with debounced server-side violation reporting.
+ * Monitors: visibility change (tab switch), fullscreen exit, context menu, copy/paste, keyboard shortcuts.
+ * Reports violations to the server action which logs to DB and emails the teacher.
  */
-function useAntiCheat(dispatch: React.Dispatch<ExamAction>, enabled: boolean) {
+const VIOLATION_DEBOUNCE_MS = 5000; // 5s debounce per violation type
+
+function useProctoring(
+  dispatch: React.Dispatch<ExamAction>,
+  examId: string,
+  enabled: boolean,
+  setFullscreenOverlay: (show: boolean) => void,
+) {
+  const lastReportedRef = useRef<Record<string, number>>({});
+
+  const reportViolation = useCallback(
+    (violationType: "TAB_SWITCH" | "EXITED_FULLSCREEN") => {
+      const now = Date.now();
+      const lastTime = lastReportedRef.current[violationType] ?? 0;
+
+      // Debounce: skip if same violation type was reported within the window
+      if (now - lastTime < VIOLATION_DEBOUNCE_MS) return;
+      lastReportedRef.current[violationType] = now;
+
+      dispatch({ type: "INCREMENT_TAB_SWITCH" });
+
+      // Fire-and-forget server call — don't block UI
+      reportCheatViolation({ examId, violationType }).catch(() => {
+        // Silently ignore network errors — violation is still tracked locally
+      });
+    },
+    [examId, dispatch],
+  );
+
   useEffect(() => {
     if (!enabled) return;
 
     const handleVisibility = () => {
       if (document.hidden) {
-        dispatch({ type: "INCREMENT_TAB_SWITCH" });
+        reportViolation("TAB_SWITCH");
         toast.error(
-          "تحذير: تم اكتشاف خروج من صفحة الامتحان. سيتم تسجيل هذه المخالفة.",
+          "⚠️ تحذير: تم اكتشاف خروج من صفحة الامتحان. تم تسجيل المخالفة وإبلاغ المحاضر.",
           { duration: 6000 },
         );
       }
     };
 
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        reportViolation("EXITED_FULLSCREEN");
+        setFullscreenOverlay(true);
+        toast.error(
+          "⚠️ تحذير: تم الخروج من وضع ملء الشاشة. تم تسجيل المخالفة.",
+          { duration: 6000 },
+        );
+      } else {
+        setFullscreenOverlay(false);
+      }
+    };
+
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+    const handleCopy = (e: ClipboardEvent) => e.preventDefault();
+    const handlePaste = (e: ClipboardEvent) => e.preventDefault();
+    const handleCut = (e: ClipboardEvent) => e.preventDefault();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Block Ctrl/Cmd + C/V/X/A/U/S/P
@@ -341,15 +389,23 @@ function useAntiCheat(dispatch: React.Dispatch<ExamAction>, enabled: boolean) {
     };
 
     document.addEventListener("visibilitychange", handleVisibility);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
     document.addEventListener("contextmenu", handleContextMenu);
+    document.addEventListener("copy", handleCopy);
+    document.addEventListener("paste", handlePaste);
+    document.addEventListener("cut", handleCut);
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
       document.removeEventListener("visibilitychange", handleVisibility);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.removeEventListener("contextmenu", handleContextMenu);
+      document.removeEventListener("copy", handleCopy);
+      document.removeEventListener("paste", handlePaste);
+      document.removeEventListener("cut", handleCut);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [enabled, dispatch]);
+  }, [enabled, reportViolation, setFullscreenOverlay]);
 }
 
 function useBeforeUnload(enabled: boolean) {
@@ -371,8 +427,10 @@ function speakText(text: string) {
   // Guard: SpeechSynthesis may not be available in all browsers
   if (typeof window === "undefined" || !window.speechSynthesis) return;
 
+  const synth = window.speechSynthesis;
+
   // Cancel any currently-playing speech to avoid overlap
-  window.speechSynthesis.cancel();
+  synth.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "ar-SA"; // Arabic (Saudi Arabia)
@@ -380,11 +438,17 @@ function speakText(text: string) {
   utterance.pitch = 1;
 
   // Try to pick an Arabic voice if available
-  const voices = window.speechSynthesis.getVoices();
+  const voices = synth.getVoices();
   const arabicVoice = voices.find((v) => v.lang.startsWith("ar"));
   if (arabicVoice) utterance.voice = arabicVoice;
 
-  window.speechSynthesis.speak(utterance);
+  // speak() must be called synchronously within the user gesture —
+  // wrapping in setTimeout breaks the gesture chain and Chrome blocks it.
+  synth.speak(utterance);
+
+  // Chrome workaround: after cancel(), the queue can get stuck in a paused
+  // state. Calling resume() nudges it to actually start the new utterance.
+  synth.resume();
 }
 
 /**
@@ -464,51 +528,78 @@ function MCQAnswer({
   question,
   value,
   onChange,
+  isVisual = false,
 }: {
   question: MCQQuestion;
   value: string;
   onChange: (v: string) => void;
+  isVisual?: boolean;
 }) {
   return (
     <RadioGroup value={value} onValueChange={onChange} className="gap-3">
       {question.options.map((option, i) => {
         const isSelected = value === option.id;
+        const optionLabel = OPTION_LETTERS[i] ?? String.fromCharCode(65 + i);
         return (
-          <label
-            key={option.id}
-            className={cn(
-              "group flex items-center gap-4 rounded-xl border-2 p-4 md:p-5 cursor-pointer transition-all duration-200",
-              isSelected
-                ? "border-blue-500 bg-blue-50/80 shadow-sm shadow-blue-100"
-                : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/50",
-            )}
-          >
-            <span
+          // Wrap in a div so the audio button is OUTSIDE the <label>.
+          // A <button> inside a <label> cannot stop the label from
+          // activating its associated input, even with stopPropagation.
+          <div key={option.id} className="flex items-center gap-2">
+            <label
               className={cn(
-                "size-11 shrink-0 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-200",
+                "group flex flex-1 items-center gap-4 rounded-xl border-2 p-4 md:p-5 cursor-pointer transition-all duration-200",
                 isSelected
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-200"
-                  : "bg-gray-100 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-500",
+                  ? "border-blue-500 bg-blue-50/80 shadow-sm shadow-blue-100"
+                  : "border-gray-100 hover:border-gray-200 hover:bg-gray-50/50",
               )}
             >
-              {OPTION_LETTERS[i] ?? String.fromCharCode(65 + i)}
-            </span>
+              <span
+                className={cn(
+                  "size-11 shrink-0 rounded-xl flex items-center justify-center text-sm font-bold transition-all duration-200",
+                  isSelected
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-200"
+                    : "bg-gray-100 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-500",
+                )}
+              >
+                {optionLabel}
+              </span>
 
-            <RadioGroupItem value={option.id} className="sr-only" />
+              <RadioGroupItem value={option.id} className="sr-only" />
 
-            <span
-              className={cn(
-                "text-base md:text-lg font-medium leading-relaxed flex-1",
-                isSelected ? "text-blue-900" : "text-gray-700",
+              <span
+                className={cn(
+                  "text-base md:text-lg font-medium leading-relaxed flex-1",
+                  isSelected ? "text-blue-900" : "text-gray-700",
+                )}
+              >
+                {option.text}
+              </span>
+
+              {isSelected && (
+                <CheckCircle2 className="size-5 text-blue-600 shrink-0" />
               )}
-            >
-              {option.text}
-            </span>
+            </label>
 
-            {isSelected && (
-              <CheckCircle2 className="size-5 text-blue-600 shrink-0" />
+            {/* Per-option audio button — VISUAL disability only */}
+            {isVisual && (
+              <button
+                type="button"
+                onClick={() =>
+                  speakText(`الخيار ${optionLabel}: ${option.text}`)
+                }
+                className={cn(
+                  "size-10 shrink-0 rounded-xl border flex items-center justify-center transition-all duration-200",
+                  "border-purple-200 bg-purple-50 text-purple-600",
+                  "hover:bg-purple-100 hover:border-purple-300",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400",
+                )}
+                aria-label={`قراءة الإجابة ${optionLabel}: ${option.text}`}
+                title={`قراءة الإجابة (${i + 1})`}
+              >
+                <Play className="size-4 fill-purple-400" />
+              </button>
             )}
-          </label>
+          </div>
         );
       })}
     </RadioGroup>
@@ -521,10 +612,12 @@ function EssayAnswer({
   question,
   value,
   onChange,
+  isVisual = false,
 }: {
   question: EssayQuestion;
   value: string;
   onChange: (v: string) => void;
+  isVisual?: boolean;
 }) {
   const maxChars = question.maxChars ?? 1000;
   const charCount = value.length;
@@ -534,6 +627,28 @@ function EssayAnswer({
 
   return (
     <div className="space-y-2">
+      {/* Read-back button for VISUAL users */}
+      {isVisual && (
+        <div aria-live="polite" className="flex justify-end mb-1">
+          <button
+            type="button"
+            onClick={() =>
+              value.trim() ? speakText(value) : speakText("لم تكتب إجابة بعد.")
+            }
+            className={cn(
+              "flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-all duration-200",
+              "border-purple-200 bg-purple-50 text-purple-700",
+              "hover:bg-purple-100 hover:border-purple-300",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400",
+            )}
+            aria-label="قراءة إجابتك المكتوبة صوتياً"
+            title="قراءة إجابتك (A)"
+          >
+            <Volume2 className="size-3.5 shrink-0" />
+            قراءة إجابتك
+          </button>
+        </div>
+      )}
       <Textarea
         value={value}
         onChange={(e) => {
@@ -962,6 +1077,7 @@ function AccessibilityToolbar({
 
 export default function ExamClient({
   exam,
+  disabilityType = "NONE",
 }: {
   exam: SanitizedExamData;
   disabilityType?: DisabilityType;
@@ -1011,13 +1127,87 @@ export default function ExamClient({
 
   // ── Hooks ──────────────────────────────────────────────────────────────────
   useAutoSave(exam.id, state, dispatch);
-  useAntiCheat(dispatch, !submitted);
-  useBeforeUnload(!submitted);
+
+  // Fullscreen gate state: exam only starts after student explicitly enters fullscreen
+  const [examStarted, setExamStarted] = useState(false);
+  // Overlay shown when student exits fullscreen mid-exam
+  const [showFullscreenOverlay, setShowFullscreenOverlay] = useState(false);
+
   const { isFullscreen, enterFullscreen, exitFullscreen } = useFullscreen();
+  useProctoring(
+    dispatch,
+    exam.id,
+    examStarted && !submitted,
+    setShowFullscreenOverlay,
+  );
+  useBeforeUnload(examStarted && !submitted);
+
+  // Handle "Start Exam in Fullscreen" button
+  const handleStartExam = useCallback(async () => {
+    try {
+      await document.documentElement.requestFullscreen();
+      setExamStarted(true);
+    } catch {
+      toast.error(
+        "لم يتمكن المتصفح من تفعيل وضع ملء الشاشة. يرجى المحاولة مرة أخرى.",
+      );
+    }
+  }, []);
+
+  // ── Audio keyboard navigation (VISUAL disability only) ─────────────────────
+  // Refs so the keydown handler never captures stale values.
+  const currentQuestionRef = useRef(currentQuestion);
+  const currentAnswerRef = useRef(answers[currentQuestion.id] ?? "");
+  useEffect(() => {
+    currentQuestionRef.current = currentQuestion;
+    currentAnswerRef.current = answers[currentQuestion.id] ?? "";
+  });
 
   useEffect(() => {
-    if (!submitted) enterFullscreen();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    if (disabilityType !== "VISUAL") return;
+
+    const handleAudioKeyDown = (e: KeyboardEvent) => {
+      // Never conflict with anti-cheat modifier combos
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      const tag = (e.target as HTMLElement).tagName;
+      const q = currentQuestionRef.current;
+      const { key } = e;
+
+      // Q / 0 — read question (works even while focused in textarea)
+      if (key === "q" || key === "Q" || key === "0") {
+        e.preventDefault();
+        speakText(q.text);
+        return;
+      }
+
+      // A — read back essay answer (only while NOT typing, to avoid conflict)
+      if (
+        (key === "a" || key === "A") &&
+        tag !== "TEXTAREA" &&
+        tag !== "INPUT"
+      ) {
+        if (q.type === "ESSAY") {
+          e.preventDefault();
+          const ans = currentAnswerRef.current;
+          speakText(ans.trim() ? ans : "لم تكتب إجابة بعد.");
+        }
+        return;
+      }
+
+      // 1–4 — read MCQ option (only when not typing)
+      if (tag !== "TEXTAREA" && tag !== "INPUT" && q.type === "MCQ") {
+        const idx = parseInt(key) - 1;
+        if (!isNaN(idx) && idx >= 0 && idx < q.options.length) {
+          e.preventDefault();
+          speakText(`الخيار ${OPTION_LETTERS[idx]}: ${q.options[idx].text}`);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleAudioKeyDown);
+    return () => document.removeEventListener("keydown", handleAudioKeyDown);
+  }, [disabilityType]);
 
   // ── Stable action helpers ──────────────────────────────────────────────────
   const setAnswer = useCallback(
@@ -1106,6 +1296,51 @@ export default function ExamClient({
     [],
   );
 
+  // ── Fullscreen Gate Screen ──────────────────────────────────────────────
+
+  if (!examStarted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-b from-white to-gray-50/50 p-6">
+        <Toaster position="top-center" dir="rtl" />
+        <div className="w-full max-w-md text-center">
+          <div className="mx-auto size-24 rounded-2xl bg-blue-50 flex items-center justify-center mb-8 shadow-sm shadow-blue-100">
+            <Maximize className="size-12 text-blue-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-3">
+            {exam.title}
+          </h1>
+          <p className="text-gray-500 text-base mb-4">
+            {exam.subject} • {exam.instructor}
+          </p>
+          <div className="rounded-xl bg-amber-50 border border-amber-100 p-4 mb-8 text-right">
+            <div className="flex items-start gap-2.5">
+              <ShieldAlert className="size-5 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-1.5 text-sm text-amber-700 leading-relaxed">
+                <p className="font-bold">تعليمات الامتحان:</p>
+                <ul className="space-y-1 list-disc pr-4">
+                  <li>يجب أن يعمل الامتحان في وضع ملء الشاشة طوال المدة.</li>
+                  <li>
+                    سيتم تسجيل أي مغادرة للصفحة أو خروج من ملء الشاشة كمخالفة.
+                  </li>
+                  <li>سيتم إبلاغ المحاضر فوراً عند رصد أي مخالفة.</li>
+                  <li>النسخ واللصق وقائمة السياق معطّلة أثناء الامتحان.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <Button
+            size="lg"
+            onClick={handleStartExam}
+            className="gap-2 bg-blue-600 hover:bg-blue-700 text-white text-base px-8 py-6"
+          >
+            <Maximize className="size-5" />
+            بدء الامتحان في وضع ملء الشاشة
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // ── Submitted Screen ──────────────────────────────────────────────────────
 
   if (submitted) {
@@ -1163,6 +1398,32 @@ export default function ExamClient({
       {...preventClipboard}
     >
       <Toaster position="top-center" dir="rtl" />
+
+      {/* ── Fullscreen Enforcement Overlay ── */}
+      {showFullscreenOverlay && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-gray-900/95 backdrop-blur-sm">
+          <div className="w-full max-w-md text-center p-6">
+            <div className="mx-auto size-20 rounded-2xl bg-red-500/20 flex items-center justify-center mb-6">
+              <ShieldAlert className="size-10 text-red-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-3">
+              تم إيقاف الامتحان
+            </h2>
+            <p className="text-gray-300 text-base mb-8 leading-relaxed">
+              يجب العودة لوضع ملء الشاشة لاستكمال الحل. تم تسجيل هذه المخالفة
+              وإبلاغ المحاضر.
+            </p>
+            <Button
+              size="lg"
+              onClick={enterFullscreen}
+              className="gap-2 bg-red-600 hover:bg-red-700 text-white text-base px-8 py-6"
+            >
+              <Maximize className="size-5" />
+              العودة لوضع ملء الشاشة
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* ── Sticky Header ── */}
       <header className="shrink-0 bg-white/95 backdrop-blur-md border-b border-gray-100 px-4 py-3 md:px-6 z-30">
@@ -1429,15 +1690,91 @@ export default function ExamClient({
               data-high-contrast={highContrastMode || undefined}
               style={{ fontSize: `${fontSizeMultiplier}rem` }}
             >
-              <p
-                className={cn(
-                  "font-medium leading-loose select-none",
-                  highContrastMode ? "text-yellow-300" : "text-gray-900",
+              <div className="flex items-start gap-4">
+                <p
+                  className={cn(
+                    "font-medium leading-loose select-none flex-1",
+                    highContrastMode ? "text-yellow-300" : "text-gray-900",
+                  )}
+                >
+                  {currentQuestion.text}
+                </p>
+
+                {/* "قراءة السؤال" button — VISUAL disability only */}
+                {disabilityType === "VISUAL" && (
+                  <div aria-live="polite" className="shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => speakText(currentQuestion.text)}
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-all duration-200",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-400",
+                        highContrastMode
+                          ? "border-yellow-400 bg-yellow-950 text-yellow-300 hover:bg-yellow-900"
+                          : "border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100 hover:border-purple-300",
+                      )}
+                      aria-label="قراءة السؤال صوتياً"
+                      title="قراءة السؤال (Q أو 0)"
+                    >
+                      <Volume2 className="size-3.5 shrink-0" />
+                      قراءة السؤال
+                    </button>
+                  </div>
                 )}
-              >
-                {currentQuestion.text}
-              </p>
+              </div>
             </div>
+
+            {/* Keyboard shortcut hint — VISUAL disability only */}
+            {disabilityType === "VISUAL" && (
+              <div
+                className={cn(
+                  "mb-5 flex items-center gap-3 rounded-xl border px-4 py-2.5 text-xs",
+                  highContrastMode
+                    ? "border-yellow-500/40 bg-yellow-950/60 text-yellow-400"
+                    : "border-purple-100 bg-purple-50/70 text-purple-700",
+                )}
+                role="note"
+                aria-label="اختصارات لوحة المفاتيح للتنقل الصوتي"
+              >
+                <Keyboard className="size-3.5 shrink-0" />
+                <span className="font-semibold ml-1">اختصارات صوتية:</span>
+                {currentQuestion.type === "MCQ" ? (
+                  <span>
+                    <kbd className="rounded bg-white/70 border border-purple-200 px-1 font-mono">
+                      Q
+                    </kbd>
+                    {" أو "}
+                    <kbd className="rounded bg-white/70 border border-purple-200 px-1 font-mono">
+                      0
+                    </kbd>
+                    {" قراءة السؤال — "}
+                    <kbd className="rounded bg-white/70 border border-purple-200 px-1 font-mono">
+                      1
+                    </kbd>
+                    {"–"}
+                    <kbd className="rounded bg-white/70 border border-purple-200 px-1 font-mono">
+                      4
+                    </kbd>
+                    {" قراءة الخيار المقابل"}
+                  </span>
+                ) : (
+                  <span>
+                    <kbd className="rounded bg-white/70 border border-purple-200 px-1 font-mono">
+                      Q
+                    </kbd>
+                    {" أو "}
+                    <kbd className="rounded bg-white/70 border border-purple-200 px-1 font-mono">
+                      0
+                    </kbd>
+                    {" قراءة السؤال — "}
+                    <kbd className="rounded bg-white/70 border border-purple-200 px-1 font-mono">
+                      A
+                    </kbd>
+                    {" قراءة إجابتك"}
+                  </span>
+                )}
+              </div>
+            )}
 
             {/* Answer */}
             {currentQuestion.type === "MCQ" ? (
@@ -1445,12 +1782,14 @@ export default function ExamClient({
                 question={currentQuestion}
                 value={answers[currentQuestion.id] ?? ""}
                 onChange={(v) => setAnswer(currentQuestion.id, v)}
+                isVisual={disabilityType === "VISUAL"}
               />
             ) : (
               <EssayAnswer
                 question={currentQuestion}
                 value={answers[currentQuestion.id] ?? ""}
                 onChange={(v) => setAnswer(currentQuestion.id, v)}
+                isVisual={disabilityType === "VISUAL"}
               />
             )}
 
