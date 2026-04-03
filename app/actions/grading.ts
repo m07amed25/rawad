@@ -86,6 +86,10 @@ export async function submitExam(
       select: {
         id: true,
         status: true,
+        allowedStudents: {
+          where: { id: studentId },
+          select: { id: true },
+        },
         questions: {
           select: {
             id: true,
@@ -102,6 +106,10 @@ export async function submitExam(
 
     if (!exam) {
       return { error: "الامتحان غير موجود" };
+    }
+
+    if (exam.allowedStudents.length === 0) {
+      return { error: "غير مصرح لك بتقديم هذا الامتحان" };
     }
 
     if (exam.status !== "ACTIVE") {

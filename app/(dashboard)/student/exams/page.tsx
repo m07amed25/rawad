@@ -25,14 +25,13 @@ export default async function ExamsPage() {
   const department = session.user.department;
   const studentId = session.user.id;
 
-  // -- 2. Fetch exams from teachers in same university & department --
+  // -- 2. Fetch exams where this student is explicitly allowed --
   const [exams, takenExamIds] = await Promise.all([
     prisma.exam.findMany({
       where: {
         status: { in: ["ACTIVE", "ENDED"] },
-        teacher: {
-          ...(universityName ? { universityName } : {}),
-          ...(department ? { department } : {}),
+        allowedStudents: {
+          some: { id: studentId },
         },
       },
       select: {

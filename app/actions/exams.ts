@@ -38,7 +38,7 @@ export async function createFullExam(data: CreateExamServerInput) {
     return { error: firstError ?? "بيانات الامتحان غير صالحة" };
   }
 
-  const { title, subjectId, duration, date, endDate, questions } = parsed.data;
+  const { title, subjectId, duration, date, endDate, questions, studentIds } = parsed.data;
 
   // Verify the subject belongs to this teacher
   const subjectRecord = await prisma.subject.findFirst({
@@ -53,6 +53,14 @@ export async function createFullExam(data: CreateExamServerInput) {
   }
   const resolvedSubject = subjectRecord.name;
 
+  // Verify all studentIds are real STUDENT users
+  const validStudents = await prisma.user.count({
+    where: { id: { in: studentIds }, role: "STUDENT" },
+  });
+  if (validStudents !== studentIds.length) {
+    return { error: "بعض الطلاب المحددين غير موجودين أو ليسوا طلاباً" };
+  }
+
   try {
     // 3) Nested create: Exam → Questions → Options (single DB transaction)
     const exam = await prisma.exam.create({
@@ -65,6 +73,10 @@ export async function createFullExam(data: CreateExamServerInput) {
         endDate: endDate ?? null,
         // teacherId is from the session — impossible to spoof
         teacherId: session.user.id,
+        // Strictly connect only selected students
+        allowedStudents: {
+          connect: studentIds.map((id) => ({ id })),
+        },
         questions: {
           create: questions.map((q) => ({
             text: q.text,
@@ -125,6 +137,9 @@ export async function toggleExamStatus(examId: string) {
       teacher: {
         select: { name: true, universityName: true, department: true },
       },
+      allowedStudents: {
+        select: { email: true, name: true },
+      },
     },
   });
 
@@ -144,11 +159,7 @@ export async function toggleExamStatus(examId: string) {
   });
 
   // ── Send notification emails when activating (DRAFT → ACTIVE) ──
-  if (
-    newStatus === "ACTIVE" &&
-    exam.teacher.universityName &&
-    exam.teacher.department
-  ) {
+  if (newStatus === "ACTIVE" && exam.allowedStudents.length > 0) {
     // Fire-and-forget: don't block the response on email delivery
     const examDate = exam.date.toLocaleDateString("ar-EG", {
       weekday: "long",
@@ -161,30 +172,16 @@ export async function toggleExamStatus(examId: string) {
       minute: "2-digit",
     });
 
-    prisma.user
-      .findMany({
-        where: {
-          role: "STUDENT",
-          universityName: exam.teacher.universityName,
-          department: exam.teacher.department,
-          isProfileComplete: true,
-        },
-        select: { email: true, name: true },
-      })
-      .then((students) => {
-        if (students.length === 0) return;
-        return sendExamNotificationEmails(students, {
-          examTitle: exam.title,
-          subjectName: exam.subject,
-          examDate,
-          examTime,
-          durationMinutes: exam.duration,
-          teacherName: exam.teacher.name,
-        });
-      })
-      .catch((err) => {
-        console.error("[toggleExamStatus] Failed to send notifications:", err);
-      });
+    sendExamNotificationEmails(exam.allowedStudents, {
+      examTitle: exam.title,
+      subjectName: exam.subject,
+      examDate,
+      examTime,
+      durationMinutes: exam.duration,
+      teacherName: exam.teacher.name,
+    }).catch((err) => {
+      console.error("[toggleExamStatus] Failed to send notifications:", err);
+    });
   }
 
   revalidatePath("/teacher/exams");
@@ -262,6 +259,11 @@ const UpdateExamSchema = createExamServerSchema.extend({
   id: z.string().uuid("معرف الامتحان غير صالح"),
   // subjectId is not required for updates — the edit form sends the subject name directly
   subjectId: z.string().uuid().optional(),
+  // studentIds is optional for updates — if omitted, allowed students are not changed
+  studentIds: z
+    .array(z.string().uuid("معرف الطالب غير صالح"))
+    .min(1, "يجب اختيار طالب واحد على الأقل")
+    .optional(),
 });
 
 export async function updateExam(data: z.infer<typeof UpdateExamSchema>) {
@@ -283,8 +285,18 @@ export async function updateExam(data: z.infer<typeof UpdateExamSchema>) {
     return { error: firstError ?? "بيانات الامتحان غير صالحة" };
   }
 
-  const { id, title, subject, duration, date, endDate, questions } =
+  const { id, title, subject, duration, date, endDate, questions, studentIds } =
     parsed.data;
+
+  // Verify studentIds if provided
+  if (studentIds && studentIds.length > 0) {
+    const validStudents = await prisma.user.count({
+      where: { id: { in: studentIds }, role: "STUDENT" },
+    });
+    if (validStudents !== studentIds.length) {
+      return { error: "بعض الطلاب المحددين غير موجودين أو ليسوا طلاباً" };
+    }
+  }
 
   // Fetch the existing exam + check ownership + count results
   const existingExam = await prisma.exam.findUnique({
@@ -323,7 +335,19 @@ export async function updateExam(data: z.infer<typeof UpdateExamSchema>) {
         // Update exam metadata
         await tx.exam.update({
           where: { id },
-          data: { title, subject, duration, date, endDate: endDate ?? null },
+          data: {
+            title,
+            subject,
+            duration,
+            date,
+            endDate: endDate ?? null,
+            // Update allowed students if provided
+            ...(studentIds ? {
+              allowedStudents: {
+                set: studentIds.map((sid) => ({ id: sid })),
+              },
+            } : {}),
+          },
         });
 
         // Update question & option texts only (no structural changes)
@@ -371,6 +395,12 @@ export async function updateExam(data: z.infer<typeof UpdateExamSchema>) {
             duration,
             date,
             endDate: endDate ?? null,
+            // Update allowed students if provided
+            ...(studentIds ? {
+              allowedStudents: {
+                set: studentIds.map((sid) => ({ id: sid })),
+              },
+            } : {}),
             questions: {
               create: questions.map((q) => ({
                 text: q.text,

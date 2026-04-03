@@ -75,6 +75,7 @@ model User {
   subjects       Subject[]       @relation("TeacherSubjects")
   results        Result[]        @relation("StudentResults")
   studentAnswers StudentAnswer[] @relation("StudentAnswers")
+  allowedExams   Exam[]          @relation("ExamAllowedStudents")
 
   @@index([role])
   @@index([email])
@@ -163,6 +164,7 @@ model Exam {
   questions      Question[]
   results        Result[]
   studentAnswers StudentAnswer[]
+  allowedStudents User[]         @relation("ExamAllowedStudents")
 
   @@index([teacherId])
   @@index([status])

@@ -60,15 +60,13 @@ export default async function StudentDashboardPage() {
 
   // ── 2. Parallel data fetching ──────────────────────────────
   const [availableExams, previousResults] = await Promise.all([
-    // a. Active exams from teachers in the same university & department,
-    //    filtered by student's academic year (via subject relation),
+    // a. Active exams where this student is explicitly allowed,
     //    excluding exams the student has already taken
     prisma.exam.findMany({
       where: {
         status: "ACTIVE",
-        teacher: {
-          ...(universityName ? { universityName } : {}),
-          ...(department ? { department } : {}),
+        allowedStudents: {
+          some: { id: studentId },
         },
         // Exclude exams the student already has an active (non-archived) result for
         NOT: {

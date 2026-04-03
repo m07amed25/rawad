@@ -892,6 +892,7 @@ export default function CreateExamPage({
       duration: data.duration,
       date: startDate,
       endDate,
+      studentIds: data.studentIds,
       questions: data.questions.map((q) => ({
         text: q.text,
         type: q.type,

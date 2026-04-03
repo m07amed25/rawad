@@ -78,9 +78,14 @@ export default async function ExamPage({
     );
   }
 
-  // ── 3. Fetch exam with questions and options ───────────────
+  // ── 3. Verify student is allowed to take this exam ──────────
   const exam = await prisma.exam.findUnique({
-    where: { id: examId },
+    where: {
+      id: examId,
+      allowedStudents: {
+        some: { id: studentId },
+      },
+    },
     select: {
       id: true,
       title: true,

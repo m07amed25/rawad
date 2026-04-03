@@ -96,6 +96,9 @@ export const createExamServerSchema = z.object({
     .date({ message: "وقت انتهاء الامتحان غير صالح" })
     .optional()
     .nullable(),
+  studentIds: z
+    .array(z.string().uuid("معرف الطالب غير صالح"))
+    .min(1, "يجب اختيار طالب واحد على الأقل"),
   questions: z
     .array(serverQuestionSchema)
     .min(1, "الامتحان يجب أن يحتوي على سؤال واحد على الأقل")
