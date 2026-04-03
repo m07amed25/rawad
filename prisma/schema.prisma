@@ -208,6 +208,7 @@ model Result {
   timeTaken       Int          // time taken in seconds
   violationsCount Int          @default(0)
   status          ResultStatus @default(UNDER_GRADING)
+  isArchived      Boolean      @default(false)
   createdAt       DateTime     @default(now())
 
   studentId String
@@ -216,9 +217,10 @@ model Result {
   examId String
   exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, examId])
+  @@unique([studentId, examId, isArchived])
   @@index([studentId])
   @@index([examId])
+  @@index([isArchived])
 }
 
 model StudentAnswer {
@@ -226,6 +228,7 @@ model StudentAnswer {
   textAnswer   String? // for essay-type questions
   isCorrect    Boolean?
   marksAwarded Float?
+  isArchived   Boolean  @default(false)
 
   studentId String
   student   User   @relation("StudentAnswers", fields: [studentId], references: [id], onDelete: Cascade)
@@ -239,8 +242,9 @@ model StudentAnswer {
   optionId String?
   option   Option? @relation(fields: [optionId], references: [id], onDelete: SetNull)
 
-  @@unique([studentId, examId, questionId])
+  @@unique([studentId, examId, questionId, isArchived])
   @@index([studentId])
   @@index([examId])
   @@index([questionId])
+  @@index([isArchived])
 }

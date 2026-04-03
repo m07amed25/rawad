@@ -67,9 +67,11 @@ export async function submitExam(
 
   try {
     // ── 3. Check for Duplicate Submission ────────────────────
-    const existingResult = await prisma.result.findUnique({
+    const existingResult = await prisma.result.findFirst({
       where: {
-        studentId_examId: { studentId, examId },
+        studentId,
+        examId,
+        isArchived: false,
       },
       select: { id: true },
     });
@@ -332,6 +334,7 @@ export async function gradeEssayQuestion(
         where: {
           studentId: studentAnswer.studentId,
           examId: studentAnswer.examId,
+          isArchived: false,
         },
         select: {
           isCorrect: true,
@@ -357,12 +360,11 @@ export async function gradeEssayQuestion(
       }
 
       // 4c. Determine new status
-      const result = await tx.result.findUnique({
+      const result = await tx.result.findFirst({
         where: {
-          studentId_examId: {
-            studentId: studentAnswer.studentId,
-            examId: studentAnswer.examId,
-          },
+          studentId: studentAnswer.studentId,
+          examId: studentAnswer.examId,
+          isArchived: false,
         },
         select: { maxScore: true },
       });
@@ -376,12 +378,11 @@ export async function gradeEssayQuestion(
       }
 
       // 4d. Update the Result record
-      await tx.result.update({
+      await tx.result.updateMany({
         where: {
-          studentId_examId: {
-            studentId: studentAnswer.studentId,
-            examId: studentAnswer.examId,
-          },
+          studentId: studentAnswer.studentId,
+          examId: studentAnswer.examId,
+          isArchived: false,
         },
         data: {
           score: newScore,

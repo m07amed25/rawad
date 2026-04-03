@@ -43,6 +43,7 @@ export default async function ExamDetailResultsPage({
       timeTaken: true,
       violationsCount: true,
       status: true,
+      isArchived: true,
       createdAt: true,
       studentId: true,
       student: {
@@ -65,6 +66,7 @@ export default async function ExamDetailResultsPage({
     timeTaken: r.timeTaken,
     violationsCount: r.violationsCount,
     status: r.status as "PASSED" | "FAILED" | "UNDER_GRADING",
+    isArchived: r.isArchived,
     submittedAt: new Date(r.createdAt).toLocaleDateString("ar-SA", {
       year: "numeric",
       month: "short",

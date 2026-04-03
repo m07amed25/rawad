@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-const INTERVAL_MS = 4 * 60 * 1000; // 4 minutes
+const INTERVAL_MS = 8 * 60 * 1000; // 8 minutes
 
 export function DbKeepalive() {
   useEffect(() => {

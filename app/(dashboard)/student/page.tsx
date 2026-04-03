@@ -70,10 +70,10 @@ export default async function StudentDashboardPage() {
           ...(universityName ? { universityName } : {}),
           ...(department ? { department } : {}),
         },
-        // Exclude exams the student already has a result for
+        // Exclude exams the student already has an active (non-archived) result for
         NOT: {
           results: {
-            some: { studentId },
+            some: { studentId, isArchived: false },
           },
         },
       },
@@ -98,9 +98,9 @@ export default async function StudentDashboardPage() {
       orderBy: { date: "asc" },
     }),
 
-    // b. Student's previous results with exam info
+    // b. Student's previous results with exam info (exclude archived)
     prisma.result.findMany({
-      where: { studentId },
+      where: { studentId, isArchived: false },
       select: {
         id: true,
         score: true,

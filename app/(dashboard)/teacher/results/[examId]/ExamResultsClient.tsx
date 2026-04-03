@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -12,6 +12,8 @@ import {
   AlertTriangle,
   Eye,
   Clock,
+  RotateCcw,
+  Archive,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -34,6 +36,20 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { resetStudentAttempt } from "@/app/actions/teacher";
+import { useRouter } from "next/navigation";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -49,6 +65,7 @@ interface StudentResult {
   timeTaken: number;
   violationsCount: number;
   status: ResultStatus;
+  isArchived: boolean;
   submittedAt: string;
 }
 
@@ -109,6 +126,8 @@ export default function ExamResultsClient({
   results: StudentResult[];
 }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const filteredResults = useMemo(() => {
     if (!searchQuery) return results;
@@ -120,21 +139,38 @@ export default function ExamResultsClient({
     );
   }, [results, searchQuery]);
 
-  // Analytics
+  // Analytics — only count active (non-archived) results
+  const activeResults = useMemo(
+    () => results.filter((r) => !r.isArchived),
+    [results],
+  );
+
   const analytics = useMemo(() => {
-    if (results.length === 0) {
+    if (activeResults.length === 0) {
       return { total: 0, passRate: 0, avgScore: 0, highest: 0 };
     }
-    const scores = results.map((r) => r.score);
-    const passed = results.filter((r) => r.status === "PASSED").length;
+    const scores = activeResults.map((r) => r.score);
+    const passed = activeResults.filter((r) => r.status === "PASSED").length;
     const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
     return {
-      total: results.length,
-      passRate: Math.round((passed / results.length) * 100),
+      total: activeResults.length,
+      passRate: Math.round((passed / activeResults.length) * 100),
       avgScore: Math.round(avg * 10) / 10,
       highest: Math.max(...scores),
     };
-  }, [results]);
+  }, [activeResults]);
+
+  function handleReset(studentId: string, studentName: string) {
+    startTransition(async () => {
+      const result = await resetStudentAttempt(examId, studentId);
+      if (result.error) {
+        toast.error(result.error);
+      } else {
+        toast.success(result.message ?? `تم أرشفة محاولة ${studentName} بنجاح`);
+        router.refresh();
+      }
+    });
+  }
 
   const statsCards = [
     {
@@ -248,7 +284,7 @@ export default function ExamResultsClient({
           <TableBody>
             {filteredResults.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-32 text-center">
+                <TableCell colSpan={9} className="h-32 text-center">
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <Users className="h-8 w-8" />
                     <p>لا توجد نتائج مطابقة</p>
@@ -263,9 +299,25 @@ export default function ExamResultsClient({
                     : 0;
 
                 return (
-                  <TableRow key={result.id}>
+                  <TableRow
+                    key={result.id}
+                    className={
+                      result.isArchived ? "opacity-50 bg-muted/30" : ""
+                    }
+                  >
                     <TableCell className="font-medium text-gray-900 dark:text-gray-50">
-                      {result.studentName}
+                      <div className="flex items-center gap-2">
+                        {result.studentName}
+                        {result.isArchived && (
+                          <Badge
+                            variant="outline"
+                            className="bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 gap-1"
+                          >
+                            <Archive className="size-3" />
+                            مؤرشف
+                          </Badge>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-muted-foreground text-sm font-mono">
                       {result.studentCode}
@@ -313,19 +365,71 @@ export default function ExamResultsClient({
                       {result.submittedAt}
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        nativeButton={false}
-                        render={
-                          <Link
-                            href={`/teacher/results/${examId}/${result.studentId}`}
-                          />
-                        }
-                      >
-                        <Eye className="size-4" />
-                        معاينة الإجابات
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        {!result.isArchived && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            nativeButton={false}
+                            render={
+                              <Link
+                                href={`/teacher/results/${examId}/${result.studentId}`}
+                              />
+                            }
+                          >
+                            <Eye className="size-4" />
+                            معاينة
+                          </Button>
+                        )}
+                        {result.isArchived ? (
+                          <span className="text-xs text-muted-foreground italic">
+                            محاولة مؤرشفة
+                          </span>
+                        ) : (
+                          <AlertDialog>
+                            <AlertDialogTrigger
+                              className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950 transition-colors disabled:opacity-50"
+                              disabled={isPending}
+                            >
+                              <RotateCcw className="size-4" />
+                              إعادة تعيين
+                            </AlertDialogTrigger>
+                            <AlertDialogContent dir="rtl">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  إعادة تعيين محاولة {result.studentName}؟
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="space-y-2">
+                                  <span className="block">
+                                    سيتم أرشفة نتيجة الطالب الحالية (الدرجة:{" "}
+                                    {result.score}/{result.maxScore}). سيتمكن
+                                    الطالب من إعادة الامتحان مرة أخرى.
+                                  </span>
+                                  <span className="block text-xs">
+                                    • لن يتم حذف البيانات — ستبقى مؤرشفة للرجوع
+                                    إليها لاحقاً.
+                                  </span>
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter className="flex gap-2 sm:gap-0">
+                                <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() =>
+                                    handleReset(
+                                      result.studentId,
+                                      result.studentName,
+                                    )
+                                  }
+                                  className="bg-amber-600 hover:bg-amber-700"
+                                >
+                                  <RotateCcw className="size-4" />
+                                  تأكيد إعادة التعيين
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

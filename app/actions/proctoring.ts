@@ -75,7 +75,7 @@ export async function reportCheatViolation(input: {
     // create a placeholder row so violations are tracked from the start.
     await prisma.result.upsert({
       where: {
-        studentId_examId: { studentId, examId },
+        studentId_examId_isArchived: { studentId, examId, isArchived: false },
       },
       update: {
         violationsCount: { increment: 1 },
@@ -90,6 +90,7 @@ export async function reportCheatViolation(input: {
         timeTaken: 0,
         violationsCount: 1,
         status: "UNDER_GRADING",
+        isArchived: false,
       },
     });
 

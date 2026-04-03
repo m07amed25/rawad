@@ -31,7 +31,7 @@ export default async function ResultsPage() {
 
   // -- 2. Fetch student results with exam info ----------------
   const results = await prisma.result.findMany({
-    where: { studentId },
+    where: { studentId, isArchived: false },
     select: {
       id: true,
       score: true,

@@ -26,7 +26,7 @@ export default async function EditExamPage({
       date: true,
       endDate: true,
       status: true,
-      _count: { select: { results: true } },
+      _count: { select: { results: { where: { isArchived: false } } } },
       questions: {
         select: {
           id: true,

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   useForm,
   useFieldArray,
@@ -444,6 +444,107 @@ function QuestionCard({
   );
 }
 
+// ─── Error Summary Helper ────────────────────────────────────────────────────
+
+function getEditErrorSummary(errors: FieldErrors<EditExamFormValues>) {
+  const metadataErrors: string[] = [];
+  const questionErrors: string[] = [];
+
+  if (errors.title) metadataErrors.push("اسم الامتحان: " + errors.title.message);
+  if (errors.subject) metadataErrors.push("المادة: " + errors.subject.message);
+  if (errors.date) metadataErrors.push("التاريخ: " + errors.date.message);
+  if (errors.startTime) metadataErrors.push("وقت البداية: " + errors.startTime.message);
+  if (errors.endTime) metadataErrors.push("وقت النهاية: " + errors.endTime.message);
+  if (errors.duration) metadataErrors.push("المدة: " + errors.duration.message);
+
+  if (errors.questions) {
+    if (errors.questions.message) {
+      questionErrors.push(errors.questions.message);
+    }
+    if (Array.isArray(errors.questions)) {
+      errors.questions.forEach((qErr, idx) => {
+        if (!qErr) return;
+        const qNum = idx + 1;
+        if (qErr.text) questionErrors.push(`السؤال ${qNum}: نص السؤال مطلوب`);
+        if (qErr.score) questionErrors.push(`السؤال ${qNum}: ${qErr.score.message}`);
+        if (qErr.options) {
+          if (typeof qErr.options === "object" && "message" in qErr.options && qErr.options.message) {
+            questionErrors.push(`السؤال ${qNum}: ${qErr.options.message}`);
+          } else if (Array.isArray(qErr.options)) {
+            const emptyCount = qErr.options.filter(Boolean).length;
+            if (emptyCount > 0) questionErrors.push(`السؤال ${qNum}: بعض الخيارات فارغة`);
+          }
+        }
+        if (qErr.correctOption) questionErrors.push(`السؤال ${qNum}: يجب تحديد الإجابة الصحيحة`);
+      });
+    }
+  }
+
+  return { metadataErrors, questionErrors };
+}
+
+// ─── Error Summary Banner ────────────────────────────────────────────────────
+
+function EditErrorSummaryBanner({
+  errors,
+  onGoToTab,
+}: {
+  errors: FieldErrors<EditExamFormValues>;
+  onGoToTab: (tab: string) => void;
+}) {
+  const { metadataErrors, questionErrors } = getEditErrorSummary(errors);
+  const hasErrors = metadataErrors.length > 0 || questionErrors.length > 0;
+
+  if (!hasErrors) return null;
+
+  return (
+    <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 mb-6 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+      <div className="flex items-center gap-2">
+        <AlertCircle className="size-5 text-destructive shrink-0" />
+        <h3 className="text-sm font-bold text-destructive">
+          يوجد {metadataErrors.length + questionErrors.length} خطأ يجب تصحيحه قبل الحفظ
+        </h3>
+      </div>
+
+      {metadataErrors.length > 0 && (
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={() => onGoToTab("metadata")}
+            className="text-xs font-semibold text-destructive hover:underline flex items-center gap-1"
+          >
+            <FileText className="size-3.5" />
+            البيانات الأساسية ({metadataErrors.length})
+          </button>
+          <ul className="list-disc list-inside text-xs text-destructive/80 space-y-0.5 mr-5">
+            {metadataErrors.map((msg, i) => (
+              <li key={i}>{msg}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {questionErrors.length > 0 && (
+        <div className="space-y-1">
+          <button
+            type="button"
+            onClick={() => onGoToTab("questions")}
+            className="text-xs font-semibold text-destructive hover:underline flex items-center gap-1"
+          >
+            <ClipboardList className="size-3.5" />
+            الأسئلة ({questionErrors.length})
+          </button>
+          <ul className="list-disc list-inside text-xs text-destructive/80 space-y-0.5 mr-5">
+            {questionErrors.map((msg, i) => (
+              <li key={i}>{msg}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Edit Exam Client Component ─────────────────────────────────────────
 
 export default function EditExamClient({
@@ -453,6 +554,7 @@ export default function EditExamClient({
 }) {
   const router = useRouter();
   const { hasResults } = initialData;
+  const [activeTab, setActiveTab] = useState("metadata");
 
   const form = useForm<EditExamFormValues>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -493,9 +595,27 @@ export default function EditExamClient({
     0,
   );
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function onError(_: FieldErrors<EditExamFormValues>) {
-    toast.error("يرجى تصحيح الأخطاء في النموذج قبل الحفظ");
+  function onError(errs: FieldErrors<EditExamFormValues>) {
+    console.log("Validation Errors:", errs);
+    const { metadataErrors, questionErrors } = getEditErrorSummary(errs);
+
+    // Auto-switch to the tab with errors
+    if (metadataErrors.length > 0) {
+      setActiveTab("metadata");
+    } else if (questionErrors.length > 0) {
+      setActiveTab("questions");
+    }
+
+    // Show a detailed toast
+    const total = metadataErrors.length + questionErrors.length;
+    const details: string[] = [];
+    if (metadataErrors.length > 0) details.push(`${metadataErrors.length} في البيانات الأساسية`);
+    if (questionErrors.length > 0) details.push(`${questionErrors.length} في الأسئلة`);
+
+    toast.error(`يوجد ${total} خطأ: ${details.join(" و ")}`, {
+      description: "راجع التفاصيل في أعلى النموذج",
+      duration: 5000,
+    });
   }
 
   async function onSubmit(data: EditExamFormValues) {
@@ -620,18 +740,33 @@ export default function EditExamClient({
       )}
 
       <form onSubmit={handleSubmit(onSubmit, onError)}>
-        <Tabs defaultValue="metadata">
+        {/* Error summary banner */}
+        <EditErrorSummaryBanner errors={errors} onGoToTab={setActiveTab} />
+
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-6 w-full sm:w-auto">
-            <TabsTrigger value="metadata" className="gap-2">
+            <TabsTrigger value="metadata" className="gap-2 relative">
               <FileText className="size-4" />
               البيانات الأساسية
+              {(errors.title || errors.subject || errors.date || errors.startTime || errors.endTime || errors.duration) && (
+                <span className="absolute -top-1 -left-1 flex size-2.5 rounded-full bg-destructive">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
+                  <span className="relative inline-flex rounded-full size-2.5 bg-destructive" />
+                </span>
+              )}
             </TabsTrigger>
-            <TabsTrigger value="questions" className="gap-2">
+            <TabsTrigger value="questions" className="gap-2 relative">
               <ClipboardList className="size-4" />
               الأسئلة
-              {fields.length > 0 && (
+              {fields.length > 0 && !errors.questions && (
                 <span className="mr-1 flex items-center justify-center size-5 rounded-full bg-primary/10 text-primary text-[11px] font-bold">
                   {fields.length}
+                </span>
+              )}
+              {errors.questions && (
+                <span className="absolute -top-1 -left-1 flex size-2.5 rounded-full bg-destructive">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
+                  <span className="relative inline-flex rounded-full size-2.5 bg-destructive" />
                 </span>
               )}
             </TabsTrigger>

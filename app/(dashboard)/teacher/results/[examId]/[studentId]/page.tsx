@@ -49,8 +49,8 @@ export default async function StudentAnswerPreviewPage({
       where: { id: studentId },
       select: { name: true, studentCode: true },
     }),
-    prisma.result.findUnique({
-      where: { studentId_examId: { studentId, examId } },
+    prisma.result.findFirst({
+      where: { studentId, examId, isArchived: false },
       select: {
         score: true,
         maxScore: true,
@@ -64,9 +64,9 @@ export default async function StudentAnswerPreviewPage({
 
   if (!student || !result) notFound();
 
-  // Fetch all student answers for this exam
+  // Fetch all student answers for this exam (non-archived)
   const studentAnswers = await prisma.studentAnswer.findMany({
-    where: { studentId, examId },
+    where: { studentId, examId, isArchived: false },
     select: {
       id: true,
       questionId: true,

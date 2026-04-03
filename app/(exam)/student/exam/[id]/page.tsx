@@ -29,9 +29,11 @@ export default async function ExamPage({
   const studentId = session.user.id;
 
   // ── 2. Check if student already submitted this exam ────────
-  const existingResult = await prisma.result.findUnique({
+  const existingResult = await prisma.result.findFirst({
     where: {
-      studentId_examId: { studentId, examId },
+      studentId,
+      examId,
+      isArchived: false,
     },
     select: { id: true },
   });

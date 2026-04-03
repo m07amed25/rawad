@@ -30,7 +30,11 @@ export default async function TeacherResultsPage() {
       subject: true,
       status: true,
       date: true,
-      _count: { select: { results: true } },
+      _count: {
+        select: {
+          results: { where: { isArchived: false } },
+        },
+      },
     },
     orderBy: { createdAt: "desc" },
   });

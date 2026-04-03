@@ -292,7 +292,7 @@ export async function updateExam(data: z.infer<typeof UpdateExamSchema>) {
     select: {
       id: true,
       status: true,
-      _count: { select: { results: true } },
+      _count: { select: { results: { where: { isArchived: false } } } },
       questions: {
         select: {
           id: true,

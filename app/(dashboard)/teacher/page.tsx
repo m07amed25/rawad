@@ -98,10 +98,11 @@ export default async function TeacherDashboardPage() {
       take: 5,
     }),
 
-    // e. Latest 5 results for exams by this teacher
+    // e. Latest 5 results for exams by this teacher (exclude archived)
     prisma.result.findMany({
       where: {
         exam: { teacherId },
+        isArchived: false,
       },
       select: {
         id: true,
