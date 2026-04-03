@@ -52,6 +52,14 @@ function isProtectedRoute(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // ─── 0a. Never intercept Server Action requests ─────────────
+  // They carry a `next-action` header and expect a specific
+  // serialised payload back — not an HTML redirect.
+  // Auth is already enforced inside every Server Action.
+  if (request.headers.has("next-action")) {
+    return NextResponse.next();
+  }
+
   // ─── 0. Skip public / static routes early (lightweight) ────
   if (!isProtectedRoute(pathname) && isPublicRoute(pathname)) {
     return NextResponse.next();
