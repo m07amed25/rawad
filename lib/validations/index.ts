@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { QuestionType, DisabilityType } from "@prisma/client";
 import { ACADEMIC_YEARS, STUDENT_ACADEMIC_YEARS } from "@/constants";
-
-// ═══════════════════════════════════════════════════════════════
-//  Subject Schemas
-// ═══════════════════════════════════════════════════════════════
+import {
+  UNIVERSITIES,
+  FACULTIES,
+  OTHER_OPTION,
+} from "@/constants/academic-data";
 
 /** Single subject row (used in both client form & server action) */
 export const subjectItemSchema = z.object({
@@ -202,20 +203,51 @@ export const submitExamSchema = z.object({
 export type SubmitExamInput = z.infer<typeof submitExamSchema>;
 
 // ═══════════════════════════════════════════════════════════════
+//  Academic Selection Helpers
+// ═══════════════════════════════════════════════════════════════
+
+const universityValues = [...UNIVERSITIES, OTHER_OPTION] as const;
+const facultyValues = [...FACULTIES, OTHER_OPTION] as const;
+
+/** University selection: pick from list OR enter custom if "أخرى" is chosen */
+const universityField = z
+  .object({
+    selected: z.enum(universityValues, {
+      message: "يرجى اختيار الجامعة",
+    }),
+    custom: z.string().trim().max(150, "اسم الجامعة طويل جداً").optional(),
+  })
+  .refine(
+    (v) =>
+      v.selected !== OTHER_OPTION ||
+      (v.custom !== undefined && v.custom.length >= 2),
+    { message: "يرجى إدخال اسم الجامعة", path: ["custom"] },
+  )
+  .transform((v) => (v.selected === OTHER_OPTION ? v.custom! : v.selected));
+
+/** Faculty (college) selection: pick from list OR enter custom */
+const facultyField = z
+  .object({
+    selected: z.enum(facultyValues, {
+      message: "يرجى اختيار الكلية",
+    }),
+    custom: z.string().trim().max(100, "اسم الكلية طويل جداً").optional(),
+  })
+  .refine(
+    (v) =>
+      v.selected !== OTHER_OPTION ||
+      (v.custom !== undefined && v.custom.length >= 2),
+    { message: "يرجى إدخال اسم الكلية", path: ["custom"] },
+  )
+  .transform((v) => (v.selected === OTHER_OPTION ? v.custom! : v.selected));
+
+// ═══════════════════════════════════════════════════════════════
 //  Profile Schemas
 // ═══════════════════════════════════════════════════════════════
 
 export const studentProfileSchema = z.object({
-  university: z
-    .string()
-    .trim()
-    .min(2, "يرجى إدخال اسم الجامعة")
-    .max(150, "اسم الجامعة طويل جداً"),
-  department: z
-    .string()
-    .trim()
-    .min(2, "يرجى إدخال اسم القسم")
-    .max(150, "اسم القسم طويل جداً"),
+  university: universityField,
+  department: facultyField,
   academicYear: z.enum(STUDENT_ACADEMIC_YEARS, {
     message: "يرجى اختيار الفرقة الدراسية",
   }),
@@ -225,29 +257,13 @@ export const studentProfileSchema = z.object({
 });
 
 export const teacherProfileSchema = z.object({
-  university: z
-    .string()
-    .trim()
-    .min(2, "يرجى إدخال اسم الجامعة")
-    .max(150, "اسم الجامعة طويل جداً"),
-  department: z
-    .string()
-    .trim()
-    .min(2, "يرجى إدخال اسم القسم")
-    .max(150, "اسم القسم طويل جداً"),
+  university: universityField,
+  department: facultyField,
 });
 
 export const completeAcademicProfileSchema = z.object({
-  universityName: z
-    .string()
-    .trim()
-    .min(2, "يرجى إدخال اسم الجامعة")
-    .max(150, "اسم الجامعة طويل جداً"),
-  college: z
-    .string()
-    .trim()
-    .min(2, "يرجى إدخال اسم الكلية")
-    .max(100, "اسم الكلية طويل جداً"),
+  universityName: universityField,
+  college: facultyField,
   department: z
     .string()
     .trim()

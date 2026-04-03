@@ -9,7 +9,6 @@ import { DisabilityType } from "@prisma/client";
 
 export async function completeStudentProfile(data: {
   nationalId: string;
-  universityName: string;
   studentCode: string;
   disabilityType: string;
 }) {
@@ -25,12 +24,6 @@ export async function completeStudentProfile(data: {
   const nationalId = data.nationalId?.trim();
   if (!nationalId || !/^\d{14}$/.test(nationalId)) {
     return { error: "الرقم القومي يجب أن يكون 14 رقماً" };
-  }
-
-  // Validate universityName
-  const universityName = data.universityName?.trim();
-  if (!universityName) {
-    return { error: "يرجى إدخال اسم الجامعة" };
   }
 
   // Validate studentCode
@@ -51,7 +44,6 @@ export async function completeStudentProfile(data: {
       data: {
         onboardingCompleted: true,
         nationalId,
-        universityName,
         studentCode,
         disabilityType: data.disabilityType as DisabilityType,
       },

@@ -1,15 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useForm } from "react-hook-form";
 import { completeAcademicProfile } from "@/app/actions/onboarding";
+import { UNIVERSITIES, FACULTIES } from "@/constants/academic-data";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
   GraduationCap,
-  Building2,
   BookOpen,
   Loader2,
   CheckCircle2,
   AlertTriangle,
   School,
+  Building2,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -20,42 +23,55 @@ const academicYears = [
   { value: "الرابعة", label: "الفرقة الرابعة" },
 ];
 
+// Client form shape (before Zod transforms)
+type FormValues = {
+  universityName: { selected: string; custom?: string };
+  college: { selected: string; custom?: string };
+  department: string;
+  academicYear: string;
+};
+
 export default function CompleteProfilePage() {
-  const [universityName, setUniversityName] = useState("");
-  const [college, setCollege] = useState("");
-  const [department, setDepartment] = useState("");
-  const [academicYear, setAcademicYear] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const {
+    setValue,
+    watch,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    defaultValues: {
+      universityName: { selected: "", custom: "" },
+      college: { selected: "", custom: "" },
+      department: "",
+      academicYear: "",
+    },
+  });
+
+  const universityName = watch("universityName");
+  const college = watch("college");
+  const academicYear = watch("academicYear");
+  const department = watch("department");
 
   const canSubmit =
-    universityName.trim().length >= 2 &&
-    college.trim().length >= 2 &&
+    universityName.selected !== "" &&
+    college.selected !== "" &&
     academicYear !== "";
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!canSubmit) return;
-
-    setError("");
-    setLoading(true);
-
+  async function onSubmit(data: FormValues) {
     try {
       const result = await completeAcademicProfile({
-        universityName: universityName.trim(),
-        college: college.trim(),
-        department: department.trim() || undefined,
-        academicYear,
+        universityName: data.universityName,
+        college: data.college,
+        department: data.department.trim() || undefined,
+        academicYear: data.academicYear,
       });
-
       if (result?.error) {
-        setError(result.error);
-        setLoading(false);
+        setError("root", { message: result.error });
       }
-      // On success, the server action redirects — no client handling needed
     } catch {
-      setError("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.");
-      setLoading(false);
+      setError("root", {
+        message: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+      });
     }
   }
 
@@ -114,12 +130,15 @@ export default function CompleteProfilePage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="px-6 sm:px-8 py-7 space-y-5">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="px-6 sm:px-8 py-7 space-y-5"
+          >
             {/* Error */}
-            {error && (
+            {errors.root && (
               <div className="flex items-center gap-2.5 p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
+                <span>{errors.root.message}</span>
               </div>
             )}
 
@@ -130,14 +149,33 @@ export default function CompleteProfilePage() {
                 الجامعة
                 <span className="text-red-400">*</span>
               </label>
-              <input
-                type="text"
-                value={universityName}
-                onChange={(e) => setUniversityName(e.target.value)}
-                placeholder="مثال: جامعة القاهرة"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all"
-                disabled={loading}
+              <SearchableSelect
+                options={UNIVERSITIES}
+                value={universityName.selected}
+                onChange={(val) =>
+                  setValue("universityName", {
+                    selected: val,
+                    custom: universityName.custom,
+                  })
+                }
+                customValue={universityName.custom}
+                onCustomValueChange={(val) =>
+                  setValue("universityName", {
+                    selected: universityName.selected,
+                    custom: val,
+                  })
+                }
+                placeholder="ابحث عن جامعتك..."
+                searchPlaceholder="اكتب اسم الجامعة..."
+                otherPlaceholder="أدخل اسم الجامعة"
+                hasError={!!errors.universityName}
+                disabled={isSubmitting}
               />
+              {errors.universityName && (
+                <p className="text-xs text-red-500">
+                  {(errors.universityName as { message?: string }).message}
+                </p>
+              )}
             </div>
 
             {/* College */}
@@ -147,14 +185,30 @@ export default function CompleteProfilePage() {
                 الكلية
                 <span className="text-red-400">*</span>
               </label>
-              <input
-                type="text"
-                value={college}
-                onChange={(e) => setCollege(e.target.value)}
-                placeholder="مثال: كلية الحاسبات والمعلومات"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all"
-                disabled={loading}
+              <SearchableSelect
+                options={FACULTIES}
+                value={college.selected}
+                onChange={(val) =>
+                  setValue("college", { selected: val, custom: college.custom })
+                }
+                customValue={college.custom}
+                onCustomValueChange={(val) =>
+                  setValue("college", {
+                    selected: college.selected,
+                    custom: val,
+                  })
+                }
+                placeholder="ابحث عن كليتك..."
+                searchPlaceholder="اكتب اسم الكلية..."
+                otherPlaceholder="أدخل اسم الكلية"
+                hasError={!!errors.college}
+                disabled={isSubmitting}
               />
+              {errors.college && (
+                <p className="text-xs text-red-500">
+                  {(errors.college as { message?: string }).message}
+                </p>
+              )}
             </div>
 
             {/* Department */}
@@ -169,10 +223,10 @@ export default function CompleteProfilePage() {
               <input
                 type="text"
                 value={department}
-                onChange={(e) => setDepartment(e.target.value)}
+                onChange={(e) => setValue("department", e.target.value)}
                 placeholder="مثال: علوم الحاسب"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all"
-                disabled={loading}
+                disabled={isSubmitting}
               />
               <p className="text-[11px] text-gray-400 leading-relaxed">
                 يمكنك تركه فارغاً إذا لم يتم تحديد القسم بعد (مثل طلاب الفرقة
@@ -194,8 +248,8 @@ export default function CompleteProfilePage() {
                     <button
                       key={year.value}
                       type="button"
-                      onClick={() => setAcademicYear(year.value)}
-                      disabled={loading}
+                      onClick={() => setValue("academicYear", year.value)}
+                      disabled={isSubmitting}
                       className={`px-4 py-2.5 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
                         isActive
                           ? "border-blue-500 bg-blue-50 text-blue-700"
@@ -212,10 +266,10 @@ export default function CompleteProfilePage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={!canSubmit || loading}
+              disabled={!canSubmit || isSubmitting}
               className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl text-sm font-bold bg-gradient-to-l from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transition-all shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer"
             >
-              {loading ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>جاري الحفظ...</span>

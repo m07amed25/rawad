@@ -507,16 +507,16 @@ export default function EditExamClient({
 
     // Map subject name to ID (you may need to adjust this based on your actual subject-to-ID mapping)
     const subjectIdMap: Record<string, string> = {
-      "الرياضيات": "math-id",
-      "الفيزياء": "physics-id",
-      "الكيمياء": "chemistry-id",
-      "الأحياء": "biology-id",
+      الرياضيات: "math-id",
+      الفيزياء: "physics-id",
+      الكيمياء: "chemistry-id",
+      الأحياء: "biology-id",
       "اللغة العربية": "arabic-id",
       "اللغة الإنجليزية": "english-id",
-      "التاريخ": "history-id",
-      "الجغرافيا": "geography-id",
+      التاريخ: "history-id",
+      الجغرافيا: "geography-id",
       "علوم الحاسب": "cs-id",
-      "الفلسفة": "philosophy-id",
+      الفلسفة: "philosophy-id",
     };
 
     const subjectId = subjectIdMap[data.subject] || "";
@@ -702,9 +702,7 @@ export default function EditExamClient({
                       type="time"
                       {...register("startTime")}
                     />
-                    <FieldError
-                      message={errors.startTime?.message as string}
-                    />
+                    <FieldError message={errors.startTime?.message as string} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="exam-end-time">وقت نهاية الامتحان</Label>
@@ -713,9 +711,7 @@ export default function EditExamClient({
                       type="time"
                       {...register("endTime")}
                     />
-                    <FieldError
-                      message={errors.endTime?.message as string}
-                    />
+                    <FieldError message={errors.endTime?.message as string} />
                   </div>
                 </div>
 

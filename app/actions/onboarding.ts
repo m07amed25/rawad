@@ -7,8 +7,8 @@ import { redirect } from "next/navigation";
 import { completeAcademicProfileSchema } from "@/lib/validations";
 
 export async function completeAcademicProfile(formData: {
-  universityName: string;
-  college: string;
+  universityName: { selected: string; custom?: string } | string;
+  college: { selected: string; custom?: string } | string;
   department?: string;
   academicYear: string;
 }) {

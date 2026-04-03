@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Cairo } from "next/font/google";
+import { Cairo, Inter } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import React from "react";
@@ -9,6 +9,11 @@ import { Toaster } from "@/components/ui/sonner";
 const cairo = Cairo({
   variable: "--font-cairo",
   subsets: ["arabic", "latin"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
 });
 
 const aquatico = localFont({
@@ -81,7 +86,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ar" data-scroll-behavior="smooth">
-      <body className={`${cairo.variable} ${aquatico.variable}`}>
+      <body className={`${cairo.variable} ${inter.variable} ${aquatico.variable}`}>
         <ConditionalNav />
         {children}
         {/* RTL-friendly Sonner toaster — position top-right maps to top-left in RTL */}

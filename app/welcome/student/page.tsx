@@ -6,7 +6,6 @@ import { completeStudentProfile } from "@/app/actions/auth-actions";
 import { ArrowRight } from "lucide-react";
 import {
   IconId,
-  IconBuilding,
   IconHash,
   IconAccessible,
 } from "@tabler/icons-react";
@@ -30,7 +29,6 @@ export default function StudentWelcomePage() {
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     nationalId: "",
-    universityName: "",
     studentCode: "",
     disabilityType: "NONE",
   });
@@ -227,19 +225,6 @@ export default function StudentWelcomePage() {
                   onChange={handleChange}
                   placeholder="أدخل الرقم القومي"
                   icon={<IconId className="size-4" />}
-                  error={!!error}
-                />
-              </div>
-
-              <div>
-                <AuthInput
-                  label="اسم الجامعة"
-                  required
-                  name="universityName"
-                  value={formData.universityName}
-                  onChange={handleChange}
-                  placeholder="أدخل اسم الجامعة"
-                  icon={<IconBuilding className="size-4" />}
                   error={!!error}
                 />
               </div>

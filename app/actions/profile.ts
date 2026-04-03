@@ -4,18 +4,15 @@ import { prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import {
-  studentProfileSchema,
-  teacherProfileSchema,
-} from "@/lib/validations";
+import { studentProfileSchema, teacherProfileSchema } from "@/lib/validations";
 
 // ─── Complete Profile Action ─────────────────────────────────
 // Unified profile completion for both STUDENT and TEACHER roles.
 // Session is verified server-side — no client data is trusted for identity.
 
 export async function completeProfile(formData: {
-  university: string;
-  department: string;
+  university: { selected: string; custom?: string } | string;
+  department: { selected: string; custom?: string } | string;
   academicYear?: string;
   disabilityType?: string;
 }) {
