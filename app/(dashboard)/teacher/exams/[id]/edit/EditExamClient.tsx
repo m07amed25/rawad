@@ -505,10 +505,27 @@ export default function EditExamClient({
       ? new Date(`${data.date}T${data.endTime}`)
       : null;
 
+    // Map subject name to ID (you may need to adjust this based on your actual subject-to-ID mapping)
+    const subjectIdMap: Record<string, string> = {
+      "الرياضيات": "math-id",
+      "الفيزياء": "physics-id",
+      "الكيمياء": "chemistry-id",
+      "الأحياء": "biology-id",
+      "اللغة العربية": "arabic-id",
+      "اللغة الإنجليزية": "english-id",
+      "التاريخ": "history-id",
+      "الجغرافيا": "geography-id",
+      "علوم الحاسب": "cs-id",
+      "الفلسفة": "philosophy-id",
+    };
+
+    const subjectId = subjectIdMap[data.subject] || "";
+
     const payload = {
       id: initialData.id,
       title: data.title,
       subject: data.subject,
+      subjectId,
       duration: data.duration,
       date: startDate,
       endDate,

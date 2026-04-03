@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node --dns-result-order=ipv4first node_modules/next/dist/bin/next dev",
-    "build": "node --dns-result-order=ipv4first node_modules/next/dist/bin/next build",
+    "build": "prisma generate && node --dns-result-order=ipv4first node_modules/next/dist/bin/next build",
     "start": "node --dns-result-order=ipv4first node_modules/next/dist/bin/next start",
     "lint": "eslint"
   },

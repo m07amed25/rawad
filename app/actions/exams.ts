@@ -199,6 +199,8 @@ export async function deleteExam(examId: string) {
 
 const UpdateExamSchema = createExamServerSchema.extend({
   id: z.string().uuid("معرف الامتحان غير صالح"),
+  // subjectId is not required for updates — the edit form sends the subject name directly
+  subjectId: z.string().uuid().optional(),
 });
 
 export async function updateExam(data: z.infer<typeof UpdateExamSchema>) {
