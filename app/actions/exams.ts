@@ -38,7 +38,8 @@ export async function createFullExam(data: CreateExamServerInput) {
     return { error: firstError ?? "بيانات الامتحان غير صالحة" };
   }
 
-  const { title, subjectId, duration, date, endDate, questions, studentIds } = parsed.data;
+  const { title, subjectId, duration, date, endDate, questions, studentIds } =
+    parsed.data;
 
   // Verify the subject belongs to this teacher
   const subjectRecord = await prisma.subject.findFirst({
@@ -261,7 +262,7 @@ const UpdateExamSchema = createExamServerSchema.extend({
   subjectId: z.string().uuid().optional(),
   // studentIds is optional for updates — if omitted, allowed students are not changed
   studentIds: z
-    .array(z.string().uuid("معرف الطالب غير صالح"))
+    .array(z.string().min(1, "معرف الطالب غير صالح"))
     .min(1, "يجب اختيار طالب واحد على الأقل")
     .optional(),
 });
@@ -342,11 +343,13 @@ export async function updateExam(data: z.infer<typeof UpdateExamSchema>) {
             date,
             endDate: endDate ?? null,
             // Update allowed students if provided
-            ...(studentIds ? {
-              allowedStudents: {
-                set: studentIds.map((sid) => ({ id: sid })),
-              },
-            } : {}),
+            ...(studentIds
+              ? {
+                  allowedStudents: {
+                    set: studentIds.map((sid) => ({ id: sid })),
+                  },
+                }
+              : {}),
           },
         });
 
@@ -396,11 +399,13 @@ export async function updateExam(data: z.infer<typeof UpdateExamSchema>) {
             date,
             endDate: endDate ?? null,
             // Update allowed students if provided
-            ...(studentIds ? {
-              allowedStudents: {
-                set: studentIds.map((sid) => ({ id: sid })),
-              },
-            } : {}),
+            ...(studentIds
+              ? {
+                  allowedStudents: {
+                    set: studentIds.map((sid) => ({ id: sid })),
+                  },
+                }
+              : {}),
             questions: {
               create: questions.map((q) => ({
                 text: q.text,

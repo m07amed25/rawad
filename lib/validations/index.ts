@@ -97,7 +97,7 @@ export const createExamServerSchema = z.object({
     .optional()
     .nullable(),
   studentIds: z
-    .array(z.string().uuid("معرف الطالب غير صالح"))
+    .array(z.string().min(1, "معرف الطالب غير صالح"))
     .min(1, "يجب اختيار طالب واحد على الأقل"),
   questions: z
     .array(serverQuestionSchema)
