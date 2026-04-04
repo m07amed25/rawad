@@ -233,6 +233,7 @@ model Result {
   examId String
   exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
 
+  @@unique([studentId, examId, isArchived])
   @@index([studentId, examId, isArchived])
   @@index([studentId])
   @@index([examId])
