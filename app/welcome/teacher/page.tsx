@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { completeTeacherProfile } from "@/app/actions/auth-actions";
-import { ArrowRight } from "lucide-react";
-import { IconId } from "@tabler/icons-react";
+import { ArrowRight, CheckCircle2, FileText } from "lucide-react";
+import { IconId, IconCloudUpload } from "@tabler/icons-react";
+import { UploadButton } from "@/lib/uploadthing";
 import { getErrorMessage } from "@/lib/error-handler";
 import { authClient } from "@/lib/auth-client";
 import { AuthInput } from "@/components/ui/auth-input";
@@ -25,6 +26,8 @@ export default function TeacherWelcomePage() {
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     nationalId: "",
+    verificationDocUrl: "",
+    nationalIdDocUrl: "",
   });
   const formRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLDivElement>(null);
@@ -65,7 +68,7 @@ export default function TeacherWelcomePage() {
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ nationalId: e.target.value });
+    setFormData((prev) => ({ ...prev, nationalId: e.target.value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -107,8 +110,8 @@ export default function TeacherWelcomePage() {
         <div ref={decorativesRef}>
           <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/4 rounded-full" />
           <div className="absolute -bottom-28 -left-28 w-105 h-105 bg-white/4 rounded-full" />
-          <div className="absolute top-[20%] left-8 w-14 h-14 bg-white/[0.05] rounded-2xl rotate-12 backdrop-blur-sm" />
-          <div className="absolute bottom-[25%] right-10 w-10 h-10 bg-white/[0.05] rounded-full backdrop-blur-sm" />
+          <div className="absolute top-[20%] left-8 w-14 h-14 bg-white/5 rounded-2xl rotate-12 backdrop-blur-sm" />
+          <div className="absolute bottom-[25%] right-10 w-10 h-10 bg-white/5 rounded-full backdrop-blur-sm" />
         </div>
 
         <div className="relative z-10 flex flex-col items-center text-center px-10 max-w-md">
@@ -196,8 +199,23 @@ export default function TeacherWelcomePage() {
               delay={0.35}
               stagger={0.05}
             >
-              يرجى تقديم الرقم القومي لإكمال تسجيلك
+              يرجى تقديم الرقم القومي ورفع إثبات الهوية لإكمال تسجيلك
             </GsapTextReveal>
+          </div>
+
+          <div className="mb-6 p-4 rounded-2xl bg-blue-50/50 border border-blue-100/50 flex items-start gap-3">
+            <div className="p-2 bg-blue-100 rounded-xl text-blue-600 mt-0.5">
+              <IconCloudUpload className="size-5" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-blue-900 font-cairo">
+                خطوة التحقق من الهوية
+              </p>
+              <p className="text-xs text-blue-700/80 mt-1 font-cairo leading-relaxed">
+                برجاء رفع صورة كارنيه الجامعة أو إثبات العمل كعضو هيئة تدريس
+                لتتم مراجعته من قبل الإدارة.
+              </p>
+            </div>
           </div>
 
           {error && (
@@ -219,6 +237,148 @@ export default function TeacherWelcomePage() {
                   icon={<IconId className="size-4" />}
                   error={!!error}
                 />
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-bold text-gray-700 mb-2 font-cairo pr-1">
+                  إثبات الهوية (صورة الكارنيه أو PDF)
+                </label>
+                <div
+                  className={`p-4 rounded-2xl border-2 border-dashed transition-all ${formData.verificationDocUrl ? "border-green-200 bg-green-50/30" : "border-gray-200 bg-gray-50/50 hover:border-blue-300 hover:bg-blue-50/30"}`}
+                >
+                  {!formData.verificationDocUrl ? (
+                    <UploadButton
+                      endpoint="teacherVerification"
+                      onClientUploadComplete={(res) => {
+                        if (res && res[0]) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            verificationDocUrl: res[0].url,
+                          }));
+                        }
+                      }}
+                      onUploadError={(error: Error) => {
+                        setError(`خطأ أثناء الرفع: ${error.message}`);
+                      }}
+                      content={{
+                        button({ ready }) {
+                          if (ready) return "رفع كارنيه الجامعة";
+                          return "جاري التحميل...";
+                        },
+                        allowedContent() {
+                          return "صورة أو PDF (بحد أقصى 4MB)";
+                        },
+                      }}
+                      appearance={{
+                        button:
+                          "ut-ready:bg-blue-600 ut-ready:hover:bg-blue-700 ut-uploading:cursor-not-allowed bg-blue-500 after:bg-blue-600 rounded-xl text-sm font-cairo h-10 w-full transition-all shadow-sm",
+                        allowedContent:
+                          "text-gray-400 text-[10px] font-cairo mt-2",
+                        container: "w-full",
+                      }}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-between py-1">
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-xl bg-green-100 flex items-center justify-center text-green-600">
+                          <CheckCircle2 className="size-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-green-900 font-cairo">
+                            تم رفع كارنيه الجامعة
+                          </p>
+                          <p className="text-[10px] text-green-600 font-cairo flex items-center gap-1">
+                            <FileText className="size-3" />
+                            مستند التحقق جاهز
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            verificationDocUrl: "",
+                          }))
+                        }
+                        className="text-xs font-medium text-gray-400 hover:text-red-500 font-cairo px-3 py-1.5 rounded-lg hover:bg-red-50 transition-all"
+                      >
+                        تغيير
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-bold text-gray-700 mb-2 font-cairo pr-1">
+                  صورة البطاقة الشخصية (صورة أو PDF)
+                </label>
+                <div
+                  className={`p-4 rounded-2xl border-2 border-dashed transition-all ${formData.nationalIdDocUrl ? "border-green-200 bg-green-50/30" : "border-gray-200 bg-gray-50/50 hover:border-blue-300 hover:bg-blue-50/30"}`}
+                >
+                  {!formData.nationalIdDocUrl ? (
+                    <UploadButton
+                      endpoint="teacherVerification"
+                      onClientUploadComplete={(res) => {
+                        if (res && res[0]) {
+                          setFormData((prev) => ({
+                            ...prev,
+                            nationalIdDocUrl: res[0].url,
+                          }));
+                        }
+                      }}
+                      onUploadError={(error: Error) => {
+                        setError(`خطأ أثناء الرفع: ${error.message}`);
+                      }}
+                      content={{
+                        button({ ready }) {
+                          if (ready) return "رفع صورة البطاقة";
+                          return "جاري التحميل...";
+                        },
+                        allowedContent() {
+                          return "صورة أو PDF (بحد أقصى 4MB)";
+                        },
+                      }}
+                      appearance={{
+                        button:
+                          "ut-ready:bg-blue-600 ut-ready:hover:bg-blue-700 ut-uploading:cursor-not-allowed bg-blue-500 after:bg-blue-600 rounded-xl text-sm font-cairo h-10 w-full transition-all shadow-sm",
+                        allowedContent:
+                          "text-gray-400 text-[10px] font-cairo mt-2",
+                        container: "w-full",
+                      }}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-between py-1">
+                      <div className="flex items-center gap-3">
+                        <div className="size-10 rounded-xl bg-green-100 flex items-center justify-center text-green-600">
+                          <CheckCircle2 className="size-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-green-900 font-cairo">
+                            تم رفع صورة البطاقة
+                          </p>
+                          <p className="text-[10px] text-green-600 font-cairo flex items-center gap-1">
+                            <FileText className="size-3" />
+                            مستند البطاقة جاهز
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            nationalIdDocUrl: "",
+                          }))
+                        }
+                        className="text-xs font-medium text-gray-400 hover:text-red-500 font-cairo px-3 py-1.5 rounded-lg hover:bg-red-50 transition-all"
+                      >
+                        تغيير
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </GsapStagger>
 

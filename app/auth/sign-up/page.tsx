@@ -439,6 +439,7 @@ export default function SignUpPage() {
         />
         <button
           type="button"
+          suppressHydrationWarning
           onClick={() => setFormData((prev) => ({ ...prev, role: "STUDENT" }))}
           className={`relative z-10 flex-1 py-2 rounded-lg text-sm font-semibold font-cairo flex items-center justify-center gap-1.5 transition-colors duration-200 ${
             formData.role === "STUDENT"
@@ -451,6 +452,7 @@ export default function SignUpPage() {
         </button>
         <button
           type="button"
+          suppressHydrationWarning
           onClick={() => setFormData((prev) => ({ ...prev, role: "TEACHER" }))}
           className={`relative z-10 flex-1 py-2 rounded-lg text-sm font-semibold font-cairo flex items-center justify-center gap-1.5 transition-colors duration-200 ${
             formData.role === "TEACHER"

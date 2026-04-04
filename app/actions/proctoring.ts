@@ -145,7 +145,7 @@ async function sendCheatAlertEmail(params: {
   await transporter.sendMail({
     from: `"RAWAD App" <${process.env.SMTP_USER}>`,
     to: params.teacherEmail,
-    subject: "🚨 تنبيه غش: خروج عن شاشة الامتحان",
+    subject: "تنبيه غش: خروج عن شاشة الامتحان",
     html,
   });
 }

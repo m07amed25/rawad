@@ -42,6 +42,7 @@ const AuthInput = React.forwardRef<HTMLInputElement, AuthInputProps>(
             ref={ref}
             id={inputId}
             type={isPassword && showPassword ? "text" : type}
+            suppressHydrationWarning
             className={cn(
               "h-10 rounded-xl border-gray-200 bg-gray-50/80 px-3.5 text-sm font-cairo placeholder:text-gray-400 focus-visible:bg-white focus-visible:border-blue-500 focus-visible:ring-blue-500/20 transition-all duration-200",
               icon && "pr-10",

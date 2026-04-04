@@ -67,7 +67,11 @@ export async function completeStudentProfile(data: {
   }
 }
 
-export async function completeTeacherProfile(data: { nationalId: string }) {
+export async function completeTeacherProfile(data: {
+  nationalId: string;
+  verificationDocUrl: string;
+  nationalIdDocUrl: string;
+}) {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -82,12 +86,25 @@ export async function completeTeacherProfile(data: { nationalId: string }) {
     return { error: "الرقم القومي يجب أن يكون 14 رقماً" };
   }
 
+  // Validate verificationDocUrl
+  if (!data.verificationDocUrl) {
+    return { error: "يرجى رفع إثبات الهوية (كارنيه الجامعة أو إثبات العمل)" };
+  }
+
+  // Validate nationalIdDocUrl
+  if (!data.nationalIdDocUrl) {
+    return { error: "يرجى رفع صورة البطاقة الشخصية" };
+  }
+
   try {
     await prisma.user.update({
       where: { id: session.user.id },
       data: {
         onboardingCompleted: true,
         nationalId,
+        verificationDocUrl: data.verificationDocUrl,
+        nationalIdDocUrl: data.nationalIdDocUrl,
+        verificationStatus: "PENDING",
       },
     });
 

@@ -13,6 +13,7 @@ import {
   Trash2,
   FileText,
   Home,
+  Eye,
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
@@ -354,6 +355,18 @@ export default function TeacherExamsClient({
                           >
                             <Power className="h-4 w-4" />
                             تفعيل الامتحان
+                          </DropdownMenuItem>
+                        )}
+                        {exam.status === "ACTIVE" && (
+                          <DropdownMenuItem
+                            render={
+                              <Link
+                                href={`/teacher/exams/${exam.id}/monitor`}
+                              />
+                            }
+                          >
+                            <Eye className="h-4 w-4" />
+                            مراقبة الامتحان
                           </DropdownMenuItem>
                         )}
                         {exam.status === "ACTIVE" && (

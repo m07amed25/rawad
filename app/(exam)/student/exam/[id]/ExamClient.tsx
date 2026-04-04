@@ -8,6 +8,7 @@ import {
   useRef,
   useMemo,
   useTransition,
+  useSyncExternalStore,
 } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -353,7 +354,7 @@ function useProctoring(
       if (document.hidden) {
         reportViolation("TAB_SWITCH");
         toast.error(
-          "⚠️ تحذير: تم اكتشاف خروج من صفحة الامتحان. تم تسجيل المخالفة وإبلاغ المحاضر.",
+          "تحذير: تم اكتشاف خروج من صفحة الامتحان. تم تسجيل المخالفة وإبلاغ المحاضر.",
           { duration: 6000 },
         );
       }
@@ -363,10 +364,9 @@ function useProctoring(
       if (!document.fullscreenElement) {
         reportViolation("EXITED_FULLSCREEN");
         setFullscreenOverlay(true);
-        toast.error(
-          "⚠️ تحذير: تم الخروج من وضع ملء الشاشة. تم تسجيل المخالفة.",
-          { duration: 6000 },
-        );
+        toast.error("تحذير: تم الخروج من وضع ملء الشاشة. تم تسجيل المخالفة.", {
+          duration: 6000,
+        });
       } else {
         setFullscreenOverlay(false);
       }
@@ -415,6 +415,59 @@ function useBeforeUnload(enabled: boolean) {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [enabled]);
+}
+
+/**
+ * useTeacherSync — Polls the server for broadcast messages and force-end status.
+ */
+function useTeacherSync(
+  examId: string,
+  enabled: boolean,
+  onMessage: (msg: { content: string; sender: string }) => void,
+  onForceEnd: () => void,
+) {
+  const lastCheckRef = useRef<string>(new Date().toISOString());
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const poll = async () => {
+      try {
+        const res = await fetch(
+          `/api/exams/${examId}/student-poll?since=${lastCheckRef.current}`,
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data.isForceEnded) {
+          onForceEnd();
+          return;
+        }
+
+        if (data.messages && data.messages.length > 0) {
+          data.messages.forEach(
+            (msg: { timestamp: string; content: string; sender: string }) => {
+              onMessage(msg);
+            },
+          );
+          // Update the timestamp to the newest message's time
+          const newest = data.messages[data.messages.length - 1].timestamp;
+          lastCheckRef.current = newest;
+        }
+      } catch {
+        // Silently fail, retry on next poll
+      }
+    };
+
+    // Initial check + interval
+    const timeoutId = setTimeout(poll, 2000); // Initial check after 2s
+    const intervalId = setInterval(poll, 15000); // Poll every 15s
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
+  }, [examId, enabled, onMessage, onForceEnd]);
 }
 
 // ─── speakText — Arabic TTS via native SpeechSynthesis API ──────────────────
@@ -1087,6 +1140,11 @@ export default function ExamClient({
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const isMounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   // ── Accessibility state ────────────────────────────────────────────────────
   // fontSizeMultiplier: scales question text (1 = normal, max 1.5, min 0.8)
@@ -1280,6 +1338,36 @@ export default function ExamClient({
     router,
   ]);
 
+  // Sync with teacher broadcast and invigilation actions
+  const handleTeacherMessage = useCallback(
+    (msg: { content: string; sender: string }) => {
+      toast.info(`رسالة من ${msg.sender}`, {
+        description: msg.content,
+        duration: 10000,
+        icon: <PenLine className="size-4" />,
+      });
+    },
+    [],
+  );
+
+  const handleForceEnd = useCallback(() => {
+    toast.error("تم إنهاء الامتحان قسراً", {
+      description:
+        "تم إنهاء محاولة الامتحان الخاصة بك من قبل المراقبة. تم تسليم إجاباتك الحالية.",
+      duration: Infinity,
+    });
+    // In force-end, we call handleSubmit directly.
+    // handleSubmit handles clearing storage, submitting to DB, and redirecting.
+    handleSubmit();
+  }, [handleSubmit]);
+
+  useTeacherSync(
+    exam.id,
+    examStarted && !submitted,
+    handleTeacherMessage,
+    handleForceEnd,
+  );
+
   const {
     formatted: timerText,
     isLow,
@@ -1296,7 +1384,7 @@ export default function ExamClient({
     [],
   );
 
-  // ── Fullscreen Gate Screen ──────────────────────────────────────────────
+  if (!isMounted) return null;
 
   if (!examStarted) {
     return (

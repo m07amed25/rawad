@@ -41,6 +41,12 @@ enum ResultStatus {
   UNDER_GRADING
 }
 
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // ─── Better-Auth Base Models ─────────────────────────────────────────────────
 
 model User {
@@ -66,6 +72,11 @@ model User {
   department          String?
   academicYear        String?
 
+  // Verification fields
+  verificationDocUrl  String?
+  nationalIdDocUrl    String?
+  verificationStatus VerificationStatus @default(PENDING)
+
   // Better-Auth relations
   sessions Session[]
   accounts Account[]
@@ -76,6 +87,7 @@ model User {
   results        Result[]        @relation("StudentResults")
   studentAnswers StudentAnswer[] @relation("StudentAnswers")
   allowedExams   Exam[]          @relation("ExamAllowedStudents")
+  sentMessages   ExamMessage[]   @relation("SentMessages")
 
   @@index([role])
   @@index([email])
@@ -165,6 +177,7 @@ model Exam {
   results        Result[]
   studentAnswers StudentAnswer[]
   allowedStudents User[]         @relation("ExamAllowedStudents")
+  messages        ExamMessage[] @relation("ExamMessages")
 
   @@index([teacherId])
   @@index([status])
@@ -210,6 +223,7 @@ model Result {
   timeTaken       Int          // time taken in seconds
   violationsCount Int          @default(0)
   status          ResultStatus @default(UNDER_GRADING)
+  isForceEnded    Boolean      @default(false)
   isArchived      Boolean      @default(false)
   createdAt       DateTime     @default(now())
 
@@ -249,4 +263,19 @@ model StudentAnswer {
   @@index([examId])
   @@index([questionId])
   @@index([isArchived])
+}
+
+model ExamMessage {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  examId String
+  exam   Exam   @relation("ExamMessages", fields: [examId], references: [id], onDelete: Cascade)
+
+  senderId String
+  sender   User   @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([examId])
+  @@index([createdAt])
 }
