@@ -43,11 +43,13 @@ export async function GET(
     // Optional: Only fetch messages since a certain timestamp to save bandwidth
     const searchParams = req.nextUrl.searchParams;
     const since = searchParams.get("since");
+    const sinceDate =
+      since && !isNaN(Date.parse(since)) ? new Date(since) : null;
 
     const messages = await prisma.examMessage.findMany({
       where: {
         examId: examId,
-        ...(since ? { createdAt: { gt: new Date(since) } } : {}),
+        ...(sinceDate ? { createdAt: { gt: sinceDate } } : {}),
       },
       orderBy: { createdAt: "asc" },
       include: {

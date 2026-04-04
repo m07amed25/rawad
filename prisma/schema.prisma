@@ -233,7 +233,7 @@ model Result {
   examId String
   exam   Exam   @relation(fields: [examId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, examId, isArchived])
+  @@index([studentId, examId, isArchived])
   @@index([studentId])
   @@index([examId])
   @@index([isArchived])
@@ -258,7 +258,7 @@ model StudentAnswer {
   optionId String?
   option   Option? @relation(fields: [optionId], references: [id], onDelete: SetNull)
 
-  @@unique([studentId, examId, questionId, isArchived])
+  @@index([studentId, examId, questionId, isArchived])
   @@index([studentId])
   @@index([examId])
   @@index([questionId])

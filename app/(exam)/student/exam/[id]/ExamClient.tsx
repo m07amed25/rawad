@@ -426,16 +426,19 @@ function useTeacherSync(
   onMessage: (msg: { content: string; sender: string }) => void,
   onForceEnd: () => void,
 ) {
-  const lastCheckRef = useRef<string>(new Date().toISOString());
+  const lastCheckRef = useRef<string>("");
 
   useEffect(() => {
     if (!enabled) return;
 
     const poll = async () => {
       try {
-        const res = await fetch(
-          `/api/exams/${examId}/student-poll?since=${lastCheckRef.current}`,
-        );
+        const since = lastCheckRef.current;
+        const url = since
+          ? `/api/exams/${examId}/student-poll?since=${encodeURIComponent(since)}`
+          : `/api/exams/${examId}/student-poll`;
+
+        const res = await fetch(url);
         if (!res.ok) return;
         const data = await res.json();
 
@@ -461,7 +464,7 @@ function useTeacherSync(
 
     // Initial check + interval
     const timeoutId = setTimeout(poll, 2000); // Initial check after 2s
-    const intervalId = setInterval(poll, 15000); // Poll every 15s
+    const intervalId = setInterval(poll, 5000); // Poll every 5s
 
     return () => {
       clearTimeout(timeoutId);

@@ -85,7 +85,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ar" data-scroll-behavior="smooth">
+    <html lang="ar" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body className={`${cairo.variable} ${inter.variable} ${aquatico.variable}`}>
         <ConditionalNav />
         {children}
