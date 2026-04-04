@@ -85,7 +85,7 @@ export const createExamServerSchema = z.object({
     .min(3, "عنوان الامتحان يجب أن يكون 3 أحرف على الأقل")
     .max(200),
   subject: z.string().trim().max(200).optional().default(""),
-  subjectId: z.string().uuid("يجب اختيار المادة الدراسية"),
+  subjectId: z.string().min(1, "يجب اختيار المادة الدراسية"),
   duration: z
     .number()
     .int()
@@ -186,17 +186,17 @@ export type ExamFormValues = z.infer<typeof examFormSchema>;
 // ═══════════════════════════════════════════════════════════════
 
 export const studentAnswerSchema = z.object({
-  questionId: z.string().uuid("معرف السؤال غير صالح"),
+  questionId: z.string().min(1, "معرف السؤال غير صالح"),
   selectedOptionId: z
     .string()
-    .uuid("معرف الخيار غير صالح")
+    .min(1, "معرف الخيار غير صالح")
     .optional()
     .nullable(),
   textAnswer: z.string().max(10000).optional().nullable(),
 });
 
 export const submitExamSchema = z.object({
-  examId: z.string().uuid("معرف الامتحان غير صالح"),
+  examId: z.string().min(1, "معرف الامتحان غير صالح"),
   answers: z
     .array(studentAnswerSchema)
     .min(1, "يجب الإجابة على سؤال واحد على الأقل"),

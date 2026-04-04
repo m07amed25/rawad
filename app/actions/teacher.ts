@@ -110,8 +110,8 @@ export async function getStudentsForTeacher(teacherId: string) {
 // ─── Reset Student Attempt (Soft Delete / Archive) ───────────
 
 const resetAttemptSchema = z.object({
-  examId: z.string().uuid("معرف الامتحان غير صالح"),
-  studentId: z.string().uuid("معرف الطالب غير صالح"),
+  examId: z.string().min(1, "معرف الامتحان غير صالح"),
+  studentId: z.string().min(1, "معرف الطالب غير صالح"),
 });
 
 export async function resetStudentAttempt(examId: string, studentId: string) {
