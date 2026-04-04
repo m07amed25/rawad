@@ -101,7 +101,7 @@ export function Nav() {
                     requestAnimationFrame(step);
                   }, 150);
                 }}
-                className="relative text-neutral-600 dark:text-neutral-300"
+                className="relative text-neutral-600"
               >
                 <span className="block font-semibold">{item.name}</span>
               </a>

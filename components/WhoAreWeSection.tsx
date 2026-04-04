@@ -33,7 +33,7 @@ export default function WhoAreWeSection() {
             start: "top 85%",
             toggleActions: "play none none none",
           },
-        }
+        },
       );
 
       // Underline bar — expand from center
@@ -49,7 +49,7 @@ export default function WhoAreWeSection() {
             start: "top 85%",
             toggleActions: "play none none none",
           },
-        }
+        },
       );
 
       // Content card — glass card slides up + fades in
@@ -67,7 +67,7 @@ export default function WhoAreWeSection() {
             start: "top 88%",
             toggleActions: "play none none none",
           },
-        }
+        },
       );
 
       // List items — stagger from right (RTL feel)
@@ -85,7 +85,7 @@ export default function WhoAreWeSection() {
             start: "top 80%",
             toggleActions: "play none none none",
           },
-        }
+        },
       );
 
       // Bullets — pop in with scale bounce
@@ -103,10 +103,10 @@ export default function WhoAreWeSection() {
             start: "top 80%",
             toggleActions: "play none none none",
           },
-        }
+        },
       );
     },
-    { scope: sectionRef }
+    { scope: sectionRef },
   );
 
   return (
@@ -118,12 +118,12 @@ export default function WhoAreWeSection() {
       dir="rtl"
     >
       {/* Decorative blur */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-blue-400/10 dark:bg-blue-500/5 blur-3xl rounded-full -z-10"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60%] h-[60%] bg-blue-400/10 blur-3xl rounded-full -z-10"></div>
 
       <div className="max-w-4xl mx-auto">
         {/* Section heading */}
         <div className="whoarewe-heading text-center mb-5">
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white leading-[1.2] tracking-tight">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.2] tracking-tight">
             من{" "}
             <span className="bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-indigo-500">
               نحن؟
@@ -133,16 +133,16 @@ export default function WhoAreWeSection() {
         </div>
 
         {/* Content card */}
-        <div className="whoarewe-card bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-3xl border border-slate-200/60 dark:border-slate-700/40 shadow-xl shadow-blue-500/5 p-6 sm:p-8 lg:p-10 space-y-0">
+        <div className="whoarewe-card bg-white/60 backdrop-blur-xl rounded-3xl border border-slate-200/60 shadow-xl shadow-blue-500/5 p-6 sm:p-8 lg:p-10 space-y-0">
           <ul className="space-y-2">
             {paragraphs.map((text, i) => (
               <li
                 key={i}
-                className="whoarewe-item group flex items-start gap-3 p-3 rounded-2xl transition-all duration-300 hover:bg-blue-50/60 dark:hover:bg-blue-900/10"
+                className="whoarewe-item group flex items-start gap-3 p-3 rounded-2xl transition-all duration-300 hover:bg-blue-50/60"
               >
                 {/* Blue bullet */}
                 <span className="whoarewe-bullet mt-2 shrink-0 w-3 h-3 rounded-full bg-linear-to-br from-blue-500 to-indigo-500 shadow-md shadow-blue-500/40 group-hover:scale-125 transition-transform duration-300"></span>
-                <p className="text-lg sm:text-xl leading-relaxed text-slate-700 dark:text-slate-300">
+                <p className="text-lg sm:text-xl leading-relaxed text-slate-700">
                   {text}
                 </p>
               </li>

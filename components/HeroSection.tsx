@@ -104,13 +104,13 @@ export default function HeroSection() {
           ref={textRef}
           className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-start space-y-8"
         >
-          <h1 className="hero-title text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-900 dark:text-white leading-[1.2] drop-shadow-sm tracking-tight">
+          <h1 className="hero-title text-4xl sm:text-5xl lg:text-7xl font-extrabold text-slate-900 leading-[1.2] drop-shadow-sm tracking-tight">
             أهلاً بك في نظام{" "}
             <span className="ms-3 bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-indigo-500">
               رواد
             </span>
           </h1>
-          <p className="hero-subtitle text-lg sm:text-xl lg:text-2xl text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
+          <p className="hero-subtitle text-lg sm:text-xl lg:text-2xl text-slate-600 max-w-2xl leading-relaxed">
             نظام الامتحانات الإلكتروني للطلاب وذوي الإعاقة، تمنحك الحرية وتدعم
             احتياجاتك بكل سهولة وأمان
           </p>
@@ -123,7 +123,7 @@ export default function HeroSection() {
             </Link>
             <Link
               href="#whoisus"
-              className="hero-cta px-8 py-4 w-full sm:w-auto bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 text-lg flex items-center justify-center cursor-pointer"
+              className="hero-cta px-8 py-4 w-full sm:w-auto bg-white/80 backdrop-blur-md border border-slate-200 hover:bg-white text-slate-800 font-bold rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 text-lg flex items-center justify-center cursor-pointer"
             >
               اكتشف المزيد
             </Link>
@@ -135,7 +135,7 @@ export default function HeroSection() {
           {/* Decorative background blur element */}
           <div
             ref={blurRef}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-blue-400/20 dark:bg-blue-500/10 blur-3xl rounded-full -z-10"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-blue-400/20 blur-3xl rounded-full -z-10"
           ></div>
 
           <div

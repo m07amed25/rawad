@@ -11,7 +11,6 @@ import {
 import React, { useRef, useState } from "react";
 import Image from "next/image";
 
-
 function smoothScrollTo(targetId: string) {
   const el = document.getElementById(targetId);
   if (!el) return;
@@ -131,8 +130,8 @@ export const NavBody = ({ children, className, visible }: NavBodyProps) => {
         minWidth: "800px",
       }}
       className={cn(
-        "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full border border-transparent bg-transparent px-4 py-2 lg:flex dark:bg-transparent",
-        visible && "bg-white/85 dark:bg-neutral-950/85",
+        "relative z-[60] mx-auto hidden w-full max-w-7xl flex-row items-center justify-between self-start rounded-full border border-transparent bg-transparent px-4 py-2 lg:flex",
+        visible && "bg-white/85",
         className,
       )}
     >
@@ -168,10 +167,10 @@ export const NavItems = ({ items, className, onItemClick }: NavItemsProps) => {
           {hovered === idx && (
             <motion.div
               layoutId="hovered"
-              className="absolute inset-0 h-full w-full rounded-full bg-[#78BFF7]/20 dark:bg-[#78BFF7]/15"
+              className="absolute inset-0 h-full w-full rounded-full bg-[#78BFF7]/20"
             />
           )}
-          <span className="relative z-20 font-semibold text-neutral-700 dark:text-neutral-200 hover:text-[#1a7fc1] transition-colors duration-150">
+          <span className="relative z-20 font-semibold text-neutral-700 hover:text-[#1a7fc1] transition-colors duration-150">
             {item.name}
           </span>
         </a>
@@ -200,7 +199,7 @@ export const MobileNav = ({ children, className, visible }: MobileNavProps) => {
       }}
       className={cn(
         "relative z-50 mx-auto flex w-full max-w-[calc(100vw-1rem)] flex-col items-center justify-between bg-transparent py-2 lg:hidden",
-        visible && "bg-white/85 dark:bg-neutral-950/85",
+        visible && "bg-white/85",
         className,
       )}
     >
@@ -240,7 +239,7 @@ export const MobileNavMenu = ({
           exit={{ opacity: 0, y: -12, scale: 0.98 }}
           transition={{ duration: 0.18, ease: "easeOut" }}
           className={cn(
-            "absolute inset-x-0 top-16 z-50 flex w-full flex-col items-start justify-start gap-4 rounded-2xl bg-white/95 px-4 py-6 shadow-[0_8px_40px_rgba(120,191,247,0.18),_0_1px_0_rgba(255,255,255,0.2)_inset] border border-[#78BFF7]/20 backdrop-blur-md dark:bg-neutral-950/95 dark:border-[#78BFF7]/10",
+            "absolute inset-x-0 top-16 z-50 flex w-full flex-col items-start justify-start gap-4 rounded-2xl bg-white/95 px-4 py-6 shadow-[0_8px_40px_rgba(120,191,247,0.18),_0_1px_0_rgba(255,255,255,0.2)_inset] border border-[#78BFF7]/20 backdrop-blur-md",
             className,
           )}
         >
@@ -265,9 +264,9 @@ export const MobileNavToggle = ({
       aria-label="Toggle menu"
     >
       {isOpen ? (
-        <IconX className="text-neutral-700 dark:text-white" />
+        <IconX className="text-neutral-700" />
       ) : (
-        <IconMenu2 className="text-neutral-700 dark:text-white" />
+        <IconMenu2 className="text-neutral-700" />
       )}
     </button>
   );
@@ -275,10 +274,7 @@ export const MobileNavToggle = ({
 
 export const NavbarLogo = () => {
   return (
-    <a
-      href="#"
-      className="relative z-20 flex items-center gap-2 px-2 py-1"
-    >
+    <a href="#" className="relative z-20 flex items-center gap-2 px-2 py-1">
       <Image
         src="/images/logo.png"
         alt="logo"
@@ -287,7 +283,7 @@ export const NavbarLogo = () => {
         className="rounded-full"
       />
       <span
-        className="text-2xl font-black tracking-wide text-neutral-800 dark:text-white"
+        className="text-2xl font-black tracking-wide text-neutral-800"
         style={{ fontFamily: "var(--font-aquatico)" }}
       >
         Rawad
@@ -320,7 +316,7 @@ export const NavbarButton = ({
     primary:
       "bg-[#78BFF7] text-white shadow-[0_2px_12px_rgba(120,191,247,0.45)] hover:bg-[#5aafe8] hover:shadow-[0_4px_20px_rgba(120,191,247,0.55)]",
     secondary:
-      "bg-transparent border border-[#78BFF7]/60 text-neutral-700 hover:bg-[#78BFF7]/10 dark:text-neutral-200 dark:border-[#78BFF7]/40",
+      "bg-transparent border border-[#78BFF7]/60 text-neutral-700 hover:bg-[#78BFF7]/10",
     dark: "bg-neutral-900 text-white shadow-[0_2px_12px_rgba(0,0,0,0.25)] hover:bg-neutral-700",
     gradient:
       "bg-gradient-to-b from-[#78BFF7] to-[#3a9de0] text-white shadow-[0px_2px_0px_0px_rgba(255,255,255,0.3)_inset] hover:from-[#5aafe8] hover:to-[#2a8dd0]",

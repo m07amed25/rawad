@@ -193,7 +193,7 @@ export default function ContactSection() {
           src="/contact.svg"
           alt=""
           fill
-          className="object-contain object-left opacity-60 dark:opacity-25 scale-125"
+          className="object-contain object-left opacity-60 scale-125"
           priority={false}
         />
       </div>
@@ -201,7 +201,7 @@ export default function ContactSection() {
       <div className="container mx-auto px-6 sm:px-12">
         {/* Section Title */}
         <div className="text-right mb-8">
-          <h2 className="contact-title text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          <h2 className="contact-title text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">
             تواصل معنا
           </h2>
           <div className="contact-bar mt-2 mr-0 h-1 w-16 rounded-full bg-linear-to-l from-blue-600 to-indigo-500 origin-right" />
@@ -212,10 +212,10 @@ export default function ContactSection() {
           {/* Right Column – Info & Text */}
           <div className="space-y-6">
             <div className="space-y-2">
-              <p className="contact-info text-lg sm:text-xl lg:text-2xl font-bold text-slate-800 dark:text-slate-200 leading-relaxed">
+              <p className="contact-info text-lg sm:text-xl lg:text-2xl font-bold text-slate-800 leading-relaxed">
                 يسعدنا تواصلكم معنا في أي وقت.
               </p>
-              <p className="contact-info text-lg sm:text-xl lg:text-2xl font-bold text-slate-800 dark:text-slate-200 leading-relaxed">
+              <p className="contact-info text-lg sm:text-xl lg:text-2xl font-bold text-slate-800 leading-relaxed">
                 إذا كان لديكم أي استفسار أو واجهتكم أي مشكلة أثناء استخدام نظام
                 رواد ، يمكنكم التواصل معنا من خلال البريد الإلكتروني الخاص بنا.
               </p>
@@ -232,9 +232,9 @@ export default function ContactSection() {
 
           {/* Left Column – Contact Form Card */}
           <div>
-            <div className="contact-form-card bg-white/70 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl border border-slate-200/60 dark:border-slate-700/40 shadow-xl shadow-blue-500/5 p-6 sm:p-8">
+            <div className="contact-form-card bg-white/70 backdrop-blur-xl rounded-2xl border border-slate-200/60 shadow-xl shadow-blue-500/5 p-6 sm:p-8">
               {/* Form Title */}
-              <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white text-center mb-4">
+              <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 text-center mb-4">
                 أرسل لنا رسالة
               </h3>
 
@@ -248,7 +248,7 @@ export default function ContactSection() {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="contact-field w-full px-4 py-3 bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-xl text-right text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all duration-300 text-sm sm:text-base"
+                  className="contact-field w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-right text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all duration-300 text-sm sm:text-base"
                   required
                 />
 
@@ -261,7 +261,7 @@ export default function ContactSection() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="contact-field w-full px-4 py-3 bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-xl text-right text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all duration-300 text-sm sm:text-base"
+                  className="contact-field w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-right text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all duration-300 text-sm sm:text-base"
                   required
                 />
 
@@ -274,7 +274,7 @@ export default function ContactSection() {
                   onChange={(e) =>
                     setFormData({ ...formData, message: e.target.value })
                   }
-                  className="contact-field w-full px-4 py-3 bg-white dark:bg-slate-900/50 border border-slate-300 dark:border-slate-600 rounded-xl text-right text-slate-800 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all duration-300 resize-none text-sm sm:text-base"
+                  className="contact-field w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-right text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all duration-300 resize-none text-sm sm:text-base"
                   required
                 />
 

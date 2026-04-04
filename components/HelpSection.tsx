@@ -154,12 +154,12 @@ export default function HelpSection() {
       style={{ fontFamily: "var(--font-cairo)" }}
     >
       {/* Subtle decorative background */}
-      <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-blue-100/40 dark:bg-blue-900/10 blur-[120px] rounded-full -z-10" />
+      <div className="absolute top-0 right-0 w-[40%] h-[40%] bg-blue-100/40 blur-[120px] rounded-full -z-10" />
 
       <div className="container mx-auto px-6 sm:px-12 pt-8 lg:pt-10 pb-4 lg:pb-6">
         {/* Section Title */}
         <div className="text-right mb-6">
-          <h2 className="help-title text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+          <h2 className="help-title text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">
             ساعدني
           </h2>
           <div className="help-bar mt-2 mr-0 h-1 w-16 rounded-full bg-linear-to-l from-blue-600 to-indigo-500 origin-right" />
@@ -168,7 +168,7 @@ export default function HelpSection() {
         {/* Tabs */}
         <div className="help-tabs relative flex flex-wrap gap-0 mb-6">
           {/* Background line */}
-          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-200 dark:bg-slate-700" />
+          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-slate-200" />
 
           {tabs.map((tab) => (
             <button
@@ -176,8 +176,8 @@ export default function HelpSection() {
               onClick={() => handleTabChange(tab.id)}
               className={`help-tab relative px-5 sm:px-7 py-3.5 text-sm sm:text-base font-bold transition-all duration-300 cursor-pointer whitespace-nowrap ${
                 activeTab === tab.id
-                  ? "text-slate-900 dark:text-white"
-                  : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                  ? "text-slate-900"
+                  : "text-slate-400 hover:text-slate-600"
               }`}
             >
               {tab.label}
@@ -185,7 +185,7 @@ export default function HelpSection() {
               <span
                 className={`absolute bottom-0 left-1 right-1 h-[3.5px] rounded-t-full transition-all duration-300 ${
                   activeTab === tab.id
-                    ? "bg-[#1a365d] dark:bg-blue-400 scale-x-100"
+                    ? "bg-[#1a365d] scale-x-100"
                     : "bg-transparent scale-x-0"
                 }`}
               />
@@ -195,7 +195,7 @@ export default function HelpSection() {
 
         {/* Tab Content with GSAP animation */}
         <div ref={contentRef} className="relative min-h-[120px] sm:min-h-[100px]">
-          <p className="text-lg sm:text-xl lg:text-2xl text-slate-700 dark:text-slate-300 leading-[1.8] max-w-4xl whitespace-pre-line">
+          <p className="text-lg sm:text-xl lg:text-2xl text-slate-700 leading-[1.8] max-w-4xl whitespace-pre-line">
             {tabs[activeTab].content}
           </p>
         </div>

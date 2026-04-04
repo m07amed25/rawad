@@ -241,7 +241,7 @@ export default function WhyUsSection() {
       style={{ fontFamily: "var(--font-cairo)", perspective: "600px" }}
     >
       <div
-        className="whyus-bg-art absolute top-0 left-0 w-[600px] h-[600px] sm:w-[750px] sm:h-[750px] -z-10 opacity-25 dark:opacity-15"
+        className="whyus-bg-art absolute top-0 left-0 w-[600px] h-[600px] sm:w-[750px] sm:h-[750px] -z-10 opacity-25"
         style={{
           backgroundImage: "url('/whyus.png')",
           backgroundSize: "contain",
@@ -249,20 +249,20 @@ export default function WhyUsSection() {
           backgroundRepeat: "no-repeat",
         }}
       />
-      <div className="absolute top-1/3 left-1/4 w-[40%] h-[40%] bg-blue-400/15 dark:bg-blue-500/10 blur-[100px] rounded-full -z-10" />
-      <div className="absolute bottom-1/4 right-1/4 w-[30%] h-[30%] bg-indigo-400/10 dark:bg-indigo-500/8 blur-[80px] rounded-full -z-10" />
+      <div className="absolute top-1/3 left-1/4 w-[40%] h-[40%] bg-blue-400/15 blur-[100px] rounded-full -z-10" />
+      <div className="absolute bottom-1/4 right-1/4 w-[30%] h-[30%] bg-indigo-400/10 blur-[80px] rounded-full -z-10" />
 
       <div className="container mx-auto px-6 sm:px-12">
         {/* Section heading */}
         <div className="whyus-heading text-center mb-5 lg:mb-6">
-          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 dark:text-white leading-[1.2] tracking-tight">
+          <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.2] tracking-tight">
             لماذا{" "}
             <span className="bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-indigo-500">
               رواد؟
             </span>
           </h2>
           <div className="whyus-bar mt-2 mx-auto h-1 w-20 rounded-full bg-linear-to-r from-blue-600 to-indigo-500 origin-center" />
-          <p className="whyus-subtitle mt-3 text-lg sm:text-xl text-slate-500 dark:text-slate-400 max-w-xl mx-auto leading-relaxed">
+          <p className="whyus-subtitle mt-3 text-lg sm:text-xl text-slate-500 max-w-xl mx-auto leading-relaxed">
             نقدم لك تجربة تعليمية فريدة ومتكاملة تميزنا عن غيرنا
           </p>
         </div>
@@ -272,7 +272,7 @@ export default function WhyUsSection() {
           {features.map((feature, i) => (
             <div
               key={i}
-              className="whyus-card group relative bg-white/60 dark:bg-slate-800/50 backdrop-blur-xl rounded-2xl border border-slate-200/60 dark:border-slate-700/40 shadow-lg shadow-blue-500/5 p-5 sm:p-7 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/15 hover:-translate-y-2 hover:border-blue-300/50 dark:hover:border-blue-600/30"
+              className="whyus-card group relative bg-white/60 backdrop-blur-xl rounded-2xl border border-slate-200/60 shadow-lg shadow-blue-500/5 p-5 sm:p-7 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/15 hover:-translate-y-2 hover:border-blue-300/50"
             >
               {/* Icon */}
               <div
@@ -280,10 +280,10 @@ export default function WhyUsSection() {
               >
                 {feature.icon}
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white mb-2">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 mb-2">
                 {feature.title}
               </h3>
-              <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-sm sm:text-base">
+              <p className="text-slate-600 leading-relaxed text-sm sm:text-base">
                 {feature.description}
               </p>
             </div>
