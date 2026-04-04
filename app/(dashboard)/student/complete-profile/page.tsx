@@ -224,7 +224,7 @@ export default function CompleteProfilePage() {
                 type="text"
                 value={department}
                 onChange={(e) => setValue("department", e.target.value)}
-                placeholder="مثال: علوم الحاسب"
+                placeholder="مثال: إدارة الأعمال"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all"
                 disabled={isSubmitting}
               />

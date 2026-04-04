@@ -98,7 +98,7 @@ export default function TeacherSettingsPage() {
   const [fullName, setFullName] = useState("د. أحمد محمد عبدالله");
   const email = "ahmed.teacher@university.edu";
   const university = "جامعة القاهرة";
-  const department = "قسم علوم الحاسب";
+  const department = "قسم إدارة الأعمال";
 
   // Appearance & Accessibility
   const [theme, setTheme] = useState<Theme>("light");

@@ -151,7 +151,7 @@ const subjects = [
   "اللغة الإنجليزية",
   "التاريخ",
   "الجغرافيا",
-  "علوم الحاسب",
+  "إدارة الأعمال",
   "الفلسفة",
 ] as const;
 
@@ -635,7 +635,7 @@ export default function EditExamClient({
       "اللغة الإنجليزية": "english-id",
       التاريخ: "history-id",
       الجغرافيا: "geography-id",
-      "علوم الحاسب": "cs-id",
+      "إدارة الأعمال": "ba-id",
       الفلسفة: "philosophy-id",
     };
 

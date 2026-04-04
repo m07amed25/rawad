@@ -145,7 +145,7 @@ export default function TeacherCompleteProfilePage() {
                 type="text"
                 value={college}
                 onChange={(e) => setCollege(e.target.value)}
-                placeholder="مثال: كلية الحاسبات والمعلومات"
+                placeholder="مثال: كلية التجارة"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:bg-white transition-all"
                 disabled={loading}
               />
@@ -165,7 +165,7 @@ export default function TeacherCompleteProfilePage() {
                 type="text"
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
-                placeholder="مثال: علوم الحاسب"
+                placeholder="مثال: إدارة الأعمال"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:bg-white transition-all"
                 disabled={loading}
               />
