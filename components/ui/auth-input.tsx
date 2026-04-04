@@ -8,6 +8,7 @@ import { IconEye, IconEyeOff } from "@tabler/icons-react";
 
 interface AuthInputProps extends React.ComponentProps<"input"> {
   label: string;
+  labelAction?: React.ReactNode;
   error?: boolean;
   errorMessage?: string;
   icon?: React.ReactNode;
@@ -15,7 +16,17 @@ interface AuthInputProps extends React.ComponentProps<"input"> {
 
 const AuthInput = React.forwardRef<HTMLInputElement, AuthInputProps>(
   (
-    { className, label, error, errorMessage, icon, id, type, ...props },
+    {
+      className,
+      label,
+      labelAction,
+      error,
+      errorMessage,
+      icon,
+      id,
+      type,
+      ...props
+    },
     ref,
   ) => {
     const generatedId = React.useId();
@@ -26,12 +37,15 @@ const AuthInput = React.forwardRef<HTMLInputElement, AuthInputProps>(
 
     return (
       <div className="relative space-y-1.5">
-        <Label
-          htmlFor={inputId}
-          className="text-xs font-medium text-gray-600 font-cairo"
-        >
-          {label}
-        </Label>
+        <div className="flex justify-between items-center">
+          <Label
+            htmlFor={inputId}
+            className="text-xs font-medium text-gray-600 font-cairo"
+          >
+            {label}
+          </Label>
+          {labelAction}
+        </div>
         <div className="relative">
           {icon && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">

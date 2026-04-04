@@ -128,19 +128,19 @@ export default async function TeacherDashboardPage() {
       title: "مجموع الامتحانات",
       value: String(totalExams),
       icon: FileText,
-      accent: "text-blue-600 bg-blue-50",
+      accent: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/30",
     },
     {
       title: "إجمالي الطلاب",
       value: String(totalStudents),
       icon: Users,
-      accent: "text-emerald-600 bg-emerald-50",
+      accent: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30",
     },
     {
       title: "الامتحانات النشطة",
       value: String(activeExamsCount),
       icon: Activity,
-      accent: "text-amber-600 bg-amber-50",
+      accent: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30",
     },
   ];
 
@@ -166,19 +166,19 @@ export default async function TeacherDashboardPage() {
       </Breadcrumb>
 
       {/* Page Title */}
-      <h1 className="text-2xl font-bold text-gray-900">لوحة القيادة</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-foreground">لوحة القيادة</h1>
 
       {/* No Subjects Warning */}
       {subjectsCount === 0 && (
-        <div className="flex items-center gap-4 rounded-xl border border-amber-200 bg-amber-50 p-5">
-          <div className="flex items-center justify-center size-10 rounded-lg bg-amber-100 text-amber-600 shrink-0">
+        <div className="flex items-center gap-4 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-5">
+          <div className="flex items-center justify-center size-10 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 shrink-0">
             <AlertTriangle className="size-5" />
           </div>
           <div className="flex-1">
-            <p className="font-semibold text-gray-900">
+            <p className="font-semibold text-gray-900 dark:text-foreground">
               لم تقم بإضافة مواد دراسية بعد
             </p>
-            <p className="text-sm text-gray-600 mt-0.5">
+            <p className="text-sm text-gray-600 dark:text-muted-foreground mt-0.5">
               يجب إضافة المواد الدراسية التي تقوم بتدريسها قبل أن تتمكن من إنشاء
               امتحانات.
             </p>
@@ -196,14 +196,14 @@ export default async function TeacherDashboardPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {statsCards.map((card) => (
-          <Card key={card.title} className="border-gray-100 shadow-sm">
+          <Card key={card.title} className="border-gray-100 dark:border-border shadow-sm">
             <CardContent className="flex items-center gap-4 pt-2">
               <div className={`rounded-xl p-3 ${card.accent}`}>
                 <card.icon className="w-6 h-6" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">{card.title}</p>
-                <p className="text-2xl font-bold text-gray-900">{card.value}</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-foreground">{card.value}</p>
               </div>
             </CardContent>
           </Card>
@@ -213,15 +213,15 @@ export default async function TeacherDashboardPage() {
       {/* Data Tables Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Active Exams Table */}
-        <Card className="border-gray-100 shadow-sm">
-          <CardHeader className="border-b">
-            <CardTitle className="text-base font-semibold text-gray-900">
+        <Card className="border-gray-100 dark:border-border shadow-sm">
+          <CardHeader className="border-b dark:border-border">
+            <CardTitle className="text-base font-semibold text-gray-900 dark:text-foreground">
               الامتحانات النشطة
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {activeExamsList.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+              <div className="flex flex-col items-center justify-center py-12 text-gray-400 dark:text-muted-foreground">
                 <Inbox className="w-10 h-10 mb-3" />
                 <p className="text-sm">لا توجد امتحانات نشطة حالياً</p>
               </div>
@@ -255,9 +255,9 @@ export default async function TeacherDashboardPage() {
         </Card>
 
         {/* Recent Results Table */}
-        <Card className="border-gray-100 shadow-sm">
-          <CardHeader className="border-b">
-            <CardTitle className="text-base font-semibold text-gray-900">
+        <Card className="border-gray-100 dark:border-border shadow-sm">
+          <CardHeader className="border-b dark:border-border">
+            <CardTitle className="text-base font-semibold text-gray-900 dark:text-foreground">
               النتائج الاخيرة
             </CardTitle>
             <CardAction>
@@ -271,7 +271,7 @@ export default async function TeacherDashboardPage() {
           </CardHeader>
           <CardContent className="p-0">
             {recentResults.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+              <div className="flex flex-col items-center justify-center py-12 text-gray-400 dark:text-muted-foreground">
                 <Inbox className="w-10 h-10 mb-3" />
                 <p className="text-sm">لا توجد نتائج بعد</p>
               </div>
@@ -300,7 +300,7 @@ export default async function TeacherDashboardPage() {
                           {result.exam.title}
                         </TableCell>
                         <TableCell>
-                          <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-600/10">
+                          <span className="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-600/10 dark:ring-emerald-500/20">
                             {percentage}%
                           </span>
                         </TableCell>

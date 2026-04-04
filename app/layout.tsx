@@ -5,6 +5,7 @@ import "./globals.css";
 import React from "react";
 import { ConditionalNav } from "@/components/ConditionalNav";
 import { Toaster } from "@/components/ui/sonner";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 const cairo = Cairo({
   variable: "--font-cairo",
@@ -86,11 +87,20 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ar" data-scroll-behavior="smooth" suppressHydrationWarning>
-      <body className={`${cairo.variable} ${inter.variable} ${aquatico.variable}`}>
-        <ConditionalNav />
-        {children}
-        {/* RTL-friendly Sonner toaster — position top-right maps to top-left in RTL */}
-        <Toaster position="top-right" dir="rtl" richColors closeButton />
+      <body
+        className={`${cairo.variable} ${inter.variable} ${aquatico.variable}`}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ConditionalNav />
+          {children}
+          {/* RTL-friendly Sonner toaster — position top-right maps to top-left in RTL */}
+          <Toaster position="top-right" dir="rtl" richColors closeButton />
+        </ThemeProvider>
       </body>
     </html>
   );

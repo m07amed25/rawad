@@ -138,34 +138,25 @@ export default function SignInPage() {
             />
           </div>
 
-          <div>
-            <div className="flex justify-between items-center mb-1.5">
-              <span className="text-xs font-medium text-gray-600 font-cairo">
-                كلمة المرور
-              </span>
+          <AuthInput
+            label="كلمة المرور"
+            type="password"
+            required
+            value={formData.password}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
+            placeholder="أدخل كلمة المرور"
+            icon={<IconLock className="size-4" />}
+            labelAction={
               <Link
                 href="/auth/forgot-password"
                 className="text-xs text-blue-600 hover:text-blue-700 font-cairo transition-colors"
               >
                 نسيت كلمة المرور؟
               </Link>
-            </div>
-            <div className="relative">
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                <IconLock className="size-4" />
-              </div>
-              <input
-                type="password"
-                required
-                value={formData.password}
-                onChange={(e) =>
-                  setFormData({ ...formData, password: e.target.value })
-                }
-                className="h-10 w-full rounded-xl border border-gray-200 bg-gray-50/80 pr-10 pl-3.5 text-sm font-cairo text-gray-900 placeholder:text-gray-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all duration-200"
-                placeholder="أدخل كلمة المرور"
-              />
-            </div>
-          </div>
+            }
+          />
         </GsapStagger>
 
         <div className="mt-6">

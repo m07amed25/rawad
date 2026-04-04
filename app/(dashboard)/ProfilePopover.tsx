@@ -37,19 +37,19 @@ export function ProfilePopover({ user }: ProfilePopoverProps) {
 
   return (
     <Popover>
-      <PopoverTrigger className="flex items-center gap-3 ps-3 pe-1 py-1.5 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer outline-none">
-        <div className="w-9 h-9 rounded-full bg-linear-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shadow-md ring-2 ring-white">
+      <PopoverTrigger className="flex items-center gap-3 ps-3 pe-1 py-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-accent transition-colors cursor-pointer outline-none">
+        <div className="w-9 h-9 rounded-full bg-linear-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shadow-md ring-2 ring-white dark:ring-border">
           {user.name?.charAt(0)}
         </div>
         <div className="text-start hidden sm:block">
-          <p className="text-sm font-semibold text-gray-900 leading-tight">
+          <p className="text-sm font-semibold text-gray-900 dark:text-foreground leading-tight">
             {user.name}
           </p>
-          <p className="text-[11px] text-gray-500 mt-0.5">
+          <p className="text-[11px] text-gray-500 dark:text-muted-foreground mt-0.5">
             {isTeacher ? "معلم / دكتور" : "طالب"}
           </p>
         </div>
-        <ChevronDown className="w-4 h-4 text-gray-400 hidden sm:block" />
+        <ChevronDown className="w-4 h-4 text-gray-400 dark:text-muted-foreground hidden sm:block" />
       </PopoverTrigger>
 
       <PopoverContent
@@ -64,11 +64,11 @@ export function ProfilePopover({ user }: ProfilePopoverProps) {
             {user.name?.charAt(0)}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-gray-900 truncate">
+            <p className="text-sm font-bold text-gray-900 dark:text-foreground truncate">
               {user.name}
             </p>
-            <p className="text-xs text-gray-500 truncate">@{user.username}</p>
-            <span className="inline-block mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+            <p className="text-xs text-gray-500 dark:text-muted-foreground truncate">@{user.username}</p>
+            <span className="inline-block mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-900">
               {isTeacher ? "معلم / دكتور" : "طالب"}
             </span>
           </div>
@@ -135,11 +135,11 @@ function InfoRow({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-      <Icon className="w-4 h-4 text-gray-400 shrink-0" />
+    <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-accent transition-colors">
+      <Icon className="w-4 h-4 text-gray-400 dark:text-muted-foreground shrink-0" />
       <div className="min-w-0">
-        <p className="text-[11px] text-gray-400">{label}</p>
-        <p className="text-sm text-gray-700 truncate">{value}</p>
+        <p className="text-[11px] text-gray-400 dark:text-muted-foreground">{label}</p>
+        <p className="text-sm text-gray-700 dark:text-foreground truncate">{value}</p>
       </div>
     </div>
   );

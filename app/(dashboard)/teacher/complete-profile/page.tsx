@@ -50,12 +50,12 @@ export default function TeacherCompleteProfilePage() {
 
   return (
     <div
-      className="min-h-screen bg-linear-to-bl from-emerald-50 via-white to-teal-50/40 flex items-center justify-center p-4 sm:p-6"
+      className="min-h-screen bg-linear-to-bl from-emerald-50 via-white to-teal-50/40 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center p-4 sm:p-6"
       dir="rtl"
     >
       <div className="w-full max-w-lg">
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/60 border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-card rounded-2xl shadow-xl shadow-gray-200/60 dark:shadow-black/20 border border-gray-100 dark:border-border overflow-hidden">
           {/* Header */}
           <div className="relative bg-linear-to-l from-emerald-600 to-teal-600 px-6 sm:px-8 pt-8 pb-7 text-white">
             {/* Decorative circles */}
@@ -103,13 +103,10 @@ export default function TeacherCompleteProfilePage() {
           </div>
 
           {/* Form */}
-          <form
-            onSubmit={handleSubmit}
-            className="px-6 sm:px-8 py-7 space-y-5"
-          >
+          <form onSubmit={handleSubmit} className="px-6 sm:px-8 py-7 space-y-5">
             {/* Error */}
             {error && (
-              <div className="flex items-center gap-2.5 p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+              <div className="flex items-center gap-2.5 p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-700 dark:text-red-300">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </div>
@@ -117,7 +114,7 @@ export default function TeacherCompleteProfilePage() {
 
             {/* University */}
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-foreground">
                 <School className="w-4 h-4 text-emerald-500" />
                 الجامعة
                 <span className="text-red-400">*</span>
@@ -127,17 +124,17 @@ export default function TeacherCompleteProfilePage() {
                 value={universityName}
                 onChange={(e) => setUniversityName(e.target.value)}
                 placeholder="مثال: جامعة المنصورة"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:bg-white transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-border bg-gray-50/50 dark:bg-muted/30 text-sm text-gray-800 dark:text-foreground placeholder:text-gray-400 dark:placeholder:text-muted-foreground focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/40 focus:bg-white dark:focus:bg-background transition-all"
                 disabled={loading}
               />
             </div>
 
             {/* College */}
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-foreground">
                 <Building2 className="w-4 h-4 text-teal-500" />
                 الكلية
-                <span className="text-xs font-normal text-gray-400">
+                <span className="text-xs font-normal text-gray-400 dark:text-muted-foreground">
                   (اختياري)
                 </span>
               </label>
@@ -146,17 +143,17 @@ export default function TeacherCompleteProfilePage() {
                 value={college}
                 onChange={(e) => setCollege(e.target.value)}
                 placeholder="مثال: كلية التجارة"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:bg-white transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-border bg-gray-50/50 dark:bg-muted/30 text-sm text-gray-800 dark:text-foreground placeholder:text-gray-400 dark:placeholder:text-muted-foreground focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/40 focus:bg-white dark:focus:bg-background transition-all"
                 disabled={loading}
               />
-              <p className="text-[11px] text-gray-400 leading-relaxed">
+              <p className="text-[11px] text-gray-400 dark:text-muted-foreground leading-relaxed">
                 يمكنك تركه فارغاً إذا لم يكن ذا صلة بهيكلك الأكاديمي
               </p>
             </div>
 
             {/* Department */}
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-foreground">
                 <BookOpen className="w-4 h-4 text-cyan-500" />
                 القسم الأكاديمي
                 <span className="text-red-400">*</span>
@@ -166,17 +163,17 @@ export default function TeacherCompleteProfilePage() {
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
                 placeholder="مثال: إدارة الأعمال"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:bg-white transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-border bg-gray-50/50 dark:bg-muted/30 text-sm text-gray-800 dark:text-foreground placeholder:text-gray-400 dark:placeholder:text-muted-foreground focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/40 focus:bg-white dark:focus:bg-background transition-all"
                 disabled={loading}
               />
             </div>
 
             {/* Info box */}
-            <div className="flex items-start gap-2.5 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-sm text-emerald-700">
+            <div className="flex items-start gap-2.5 p-3.5 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl text-sm text-emerald-700 dark:text-emerald-300">
               <GraduationCap className="w-4 h-4 shrink-0 mt-0.5" />
               <span>
-                ستُستخدم هذه البيانات لعرض الطلاب المسجلين في نفس الجامعة
-                والقسم فقط.
+                ستُستخدم هذه البيانات لعرض الطلاب المسجلين في نفس الجامعة والقسم
+                فقط.
               </span>
             </div>
 
@@ -202,7 +199,7 @@ export default function TeacherCompleteProfilePage() {
         </div>
 
         {/* Footer note */}
-        <p className="text-center text-xs text-gray-400 mt-5">
+        <p className="text-center text-xs text-gray-400 dark:text-muted-foreground mt-5">
           يمكنك تعديل هذه البيانات لاحقاً من إعدادات الملف الشخصي
         </p>
       </div>

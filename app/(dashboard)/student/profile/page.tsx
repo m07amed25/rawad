@@ -34,39 +34,39 @@ const disabilityLabels: Record<
 > = {
   VISUAL: {
     label: "بصرية",
-    color: "text-violet-700",
-    bg: "bg-violet-50",
-    border: "border-violet-200",
+    color: "text-violet-700 dark:text-violet-300",
+    bg: "bg-violet-50 dark:bg-violet-950/30",
+    border: "border-violet-200 dark:border-violet-800",
   },
   HEARING: {
     label: "سمعية",
-    color: "text-blue-700",
-    bg: "bg-blue-50",
-    border: "border-blue-200",
+    color: "text-blue-700 dark:text-blue-300",
+    bg: "bg-blue-50 dark:bg-blue-950/30",
+    border: "border-blue-200 dark:border-blue-800",
   },
   MOTOR: {
     label: "حركية",
-    color: "text-amber-700",
-    bg: "bg-amber-50",
-    border: "border-amber-200",
+    color: "text-amber-700 dark:text-amber-300",
+    bg: "bg-amber-50 dark:bg-amber-950/30",
+    border: "border-amber-200 dark:border-amber-800",
   },
   MULTIPLE: {
     label: "متعدد الإعاقات",
-    color: "text-rose-700",
-    bg: "bg-rose-50",
-    border: "border-rose-200",
+    color: "text-rose-700 dark:text-rose-300",
+    bg: "bg-rose-50 dark:bg-rose-950/30",
+    border: "border-rose-200 dark:border-rose-800",
   },
   LEARNING: {
     label: "صعوبات تعلم",
-    color: "text-teal-700",
-    bg: "bg-teal-50",
-    border: "border-teal-200",
+    color: "text-teal-700 dark:text-teal-300",
+    bg: "bg-teal-50 dark:bg-teal-950/30",
+    border: "border-teal-200 dark:border-teal-800",
   },
   NONE: {
     label: "لا يوجد",
-    color: "text-gray-600",
-    bg: "bg-gray-50",
-    border: "border-gray-200",
+    color: "text-gray-600 dark:text-gray-400",
+    bg: "bg-gray-50 dark:bg-muted",
+    border: "border-gray-200 dark:border-border",
   },
 };
 
@@ -141,7 +141,7 @@ export default async function ProfilePage() {
   return (
     <div className="space-y-6">
       {/* ── Hero Card ──────────────────────────────────────────────── */}
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl overflow-hidden shadow-sm">
         {/* Cover gradient */}
         <div className="h-40 md:h-48 bg-linear-to-bl from-blue-600 via-indigo-600 to-violet-600 relative overflow-hidden">
           {/* Layered patterns for depth */}
@@ -161,7 +161,7 @@ export default async function ProfilePage() {
           <div className="flex flex-col sm:flex-row sm:items-end gap-5">
             {/* Avatar */}
             <div className="relative shrink-0 self-start">
-              <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl bg-linear-to-br from-blue-500 via-indigo-600 to-violet-600 flex items-center justify-center text-white text-3xl md:text-4xl font-bold shadow-lg shadow-indigo-600/20 ring-4 ring-white">
+              <div className="w-28 h-28 md:w-32 md:h-32 rounded-2xl bg-linear-to-br from-blue-500 via-indigo-600 to-violet-600 flex items-center justify-center text-white text-3xl md:text-4xl font-bold shadow-lg shadow-indigo-600/20 ring-4 ring-white dark:ring-card">
                 {initials}
               </div>
               {user.emailVerified && (
@@ -174,28 +174,28 @@ export default async function ProfilePage() {
             {/* Name + meta */}
             <div className="flex-1 min-w-0 sm:pb-1">
               {/* Name & badges */}
-              <h1 className="text-2xl md:text-[1.7rem] font-extrabold text-gray-900 tracking-tight leading-tight">
+              <h1 className="text-2xl md:text-[1.7rem] font-extrabold text-gray-900 dark:text-foreground tracking-tight leading-tight">
                 {user.name}
               </h1>
 
-              <p className="text-sm text-gray-400 mt-0.5 font-en">
+              <p className="text-sm text-gray-400 dark:text-muted-foreground mt-0.5 font-en">
                 @{user.username ?? user.name}
               </p>
 
               {/* Badges row */}
               <div className="flex flex-wrap items-center gap-2 mt-3">
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-100">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
                   <GraduationCap className="w-3.5 h-3.5" />
                   طالب
                 </span>
                 {academicYearInfo && (
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-100">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border border-amber-100 dark:border-amber-800">
                     <Layers className="w-3.5 h-3.5" />
                     {academicYearInfo.label}
                   </span>
                 )}
                 {user.emailVerified && (
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     موثّق
                   </span>
@@ -203,7 +203,7 @@ export default async function ProfilePage() {
               </div>
 
               {/* Meta info */}
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-xs text-gray-400">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-xs text-gray-400 dark:text-muted-foreground">
                 <span className="inline-flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5" />
                   انضم في {joinDate}
@@ -240,7 +240,7 @@ export default async function ProfilePage() {
               </Link>
               <Link
                 href="/student/settings"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 active:bg-gray-100 text-gray-700 transition-all"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold bg-white dark:bg-card border border-gray-200 dark:border-border hover:border-gray-300 dark:hover:border-muted-foreground/30 hover:bg-gray-50 dark:hover:bg-muted active:bg-gray-100 text-gray-700 dark:text-foreground transition-all"
               >
                 <KeyRound className="w-3.5 h-3.5" />
                 <span>كلمة المرور</span>
@@ -256,48 +256,48 @@ export default async function ProfilePage() {
           icon={FileText}
           label="إجمالي الاختبارات"
           value={totalExams.toString()}
-          iconColor="text-blue-600"
-          iconBg="bg-blue-50"
+          iconColor="text-blue-600 dark:text-blue-400"
+          iconBg="bg-blue-50 dark:bg-blue-950/30"
         />
         <StatCard
           icon={CheckCircle2}
           label="ناجح"
           value={passedExams.toString()}
-          iconColor="text-emerald-600"
-          iconBg="bg-emerald-50"
+          iconColor="text-emerald-600 dark:text-emerald-400"
+          iconBg="bg-emerald-50 dark:bg-emerald-950/30"
         />
         <StatCard
           icon={AlertCircle}
           label="راسب"
           value={failedExams.toString()}
-          iconColor="text-rose-600"
-          iconBg="bg-rose-50"
+          iconColor="text-rose-600 dark:text-rose-400"
+          iconBg="bg-rose-50 dark:bg-rose-950/30"
         />
         <StatCard
           icon={TrendingUp}
           label="نسبة النجاح"
           value={`${successRate}%`}
-          iconColor="text-violet-600"
-          iconBg="bg-violet-50"
+          iconColor="text-violet-600 dark:text-violet-400"
+          iconBg="bg-violet-50 dark:bg-violet-950/30"
         />
       </div>
 
       {/* ── Profile Completion ────────────────────────────────────── */}
       {completionPercent < 100 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-            <AlertCircle className="w-6 h-6 text-amber-600" />
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center shrink-0">
+            <AlertCircle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="flex-1">
-            <h3 className="text-sm font-bold text-amber-900">
+            <h3 className="text-sm font-bold text-amber-900 dark:text-amber-200">
               أكمل بياناتك الشخصية
             </h3>
-            <p className="text-xs text-amber-700 mt-0.5">
+            <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
               ملفك الشخصي مكتمل بنسبة {completionPercent}% — أضف المعلومات
               المتبقية للحصول على أفضل تجربة
             </p>
             {/* Progress bar */}
-            <div className="mt-2.5 h-2 w-full max-w-xs bg-amber-200/60 rounded-full overflow-hidden">
+            <div className="mt-2.5 h-2 w-full max-w-xs bg-amber-200/60 dark:bg-amber-900/40 rounded-full overflow-hidden">
               <div
                 className="h-full bg-amber-500 rounded-full transition-all duration-500"
                 style={{ width: `${completionPercent}%` }}
@@ -306,7 +306,7 @@ export default async function ProfilePage() {
           </div>
           <Link
             href="/student/complete-profile"
-            className="text-xs font-semibold text-amber-700 hover:text-amber-900 border border-amber-300 px-4 py-2 rounded-lg hover:bg-amber-100 transition-colors shrink-0"
+            className="text-xs font-semibold text-amber-700 dark:text-amber-300 hover:text-amber-900 border border-amber-300 dark:border-amber-700 px-4 py-2 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors shrink-0"
           >
             أكمل البيانات
           </Link>
@@ -402,20 +402,20 @@ export default async function ProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Card — Accessibility / Disability */}
         <div
-          className={`bg-white border rounded-2xl overflow-hidden shadow-sm ${
-            hasDisability ? "border-violet-200" : "border-gray-200"
+          className={`bg-white dark:bg-card border rounded-2xl overflow-hidden shadow-sm ${
+            hasDisability ? "border-violet-200 dark:border-violet-800" : "border-gray-200 dark:border-border"
           }`}
         >
           {/* Card header */}
           <div
-            className={`flex items-center gap-3 px-6 py-4 border-b ${hasDisability ? "border-violet-100 bg-violet-50/40" : "border-gray-100"}`}
+            className={`flex items-center gap-3 px-6 py-4 border-b ${hasDisability ? "border-violet-100 dark:border-violet-900 bg-violet-50/40 dark:bg-violet-950/20" : "border-gray-100 dark:border-border"}`}
           >
             <div
-              className={`w-9 h-9 rounded-xl flex items-center justify-center ${hasDisability ? "bg-violet-100 text-violet-600" : "bg-gray-100 text-gray-500"}`}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center ${hasDisability ? "bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400" : "bg-gray-100 dark:bg-muted text-gray-500 dark:text-muted-foreground"}`}
             >
               <Accessibility className="w-5 h-5" />
             </div>
-            <h2 className="text-base font-bold text-gray-900">
+            <h2 className="text-base font-bold text-gray-900 dark:text-foreground">
               الاحتياجات الخاصة
             </h2>
           </div>
@@ -429,7 +429,7 @@ export default async function ProfilePage() {
                 <Shield className={`w-7 h-7 ${disability.color}`} />
               </div>
               <div>
-                <p className="text-[11px] font-medium text-gray-400 mb-1">
+                <p className="text-[11px] font-medium text-gray-400 dark:text-muted-foreground mb-1">
                   نوع الإعاقة
                 </p>
                 <span
@@ -442,11 +442,11 @@ export default async function ProfilePage() {
 
             {hasDisability && (
               <div className="space-y-3">
-                <p className="text-[13px] text-gray-500 leading-relaxed bg-gray-50 border border-gray-100 rounded-xl p-3.5">
+                <p className="text-[13px] text-gray-500 dark:text-muted-foreground leading-relaxed bg-gray-50 dark:bg-muted/30 border border-gray-100 dark:border-border rounded-xl p-3.5">
                   يتم توفير ترتيبات خاصة بناءً على نوع الإعاقة المسجل. إذا كنت
                   بحاجة إلى تحديث هذه المعلومات، يرجى التواصل مع إدارة الجامعة.
                 </p>
-                <div className="flex items-center gap-2 text-xs text-violet-600 bg-violet-50 rounded-lg px-3 py-2 border border-violet-100">
+                <div className="flex items-center gap-2 text-xs text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950/30 rounded-lg px-3 py-2 border border-violet-100 dark:border-violet-800">
                   <Shield className="w-4 h-4" />
                   <span>يتم مراعاة حالتك تلقائيًا عند تقديم الاختبارات</span>
                 </div>
@@ -456,12 +456,12 @@ export default async function ProfilePage() {
         </div>
 
         {/* Card — Performance Overview */}
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-          <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-emerald-600" />
+        <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl overflow-hidden shadow-sm">
+          <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 dark:border-border">
+            <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <h2 className="text-base font-bold text-gray-900">
+            <h2 className="text-base font-bold text-gray-900 dark:text-foreground">
               نظرة عامة على الأداء
             </h2>
           </div>
@@ -493,10 +493,10 @@ export default async function ProfilePage() {
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-2xl font-bold text-gray-900">
+                      <span className="text-2xl font-bold text-gray-900 dark:text-foreground">
                         {successRate}%
                       </span>
-                      <span className="text-[10px] text-gray-400">
+                      <span className="text-[10px] text-gray-400 dark:text-muted-foreground">
                         نسبة النجاح
                       </span>
                     </div>
@@ -530,13 +530,13 @@ export default async function ProfilePage() {
               </>
             ) : (
               <div className="text-center py-8">
-                <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-3">
-                  <FileText className="w-8 h-8 text-gray-300" />
+                <div className="w-16 h-16 rounded-full bg-gray-50 dark:bg-muted flex items-center justify-center mx-auto mb-3">
+                  <FileText className="w-8 h-8 text-gray-300 dark:text-muted-foreground" />
                 </div>
-                <p className="text-sm font-medium text-gray-500">
+                <p className="text-sm font-medium text-gray-500 dark:text-muted-foreground">
                   لم تقم بأي اختبار بعد
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 dark:text-muted-foreground mt-1">
                   ستظهر هنا إحصائيات أدائك بعد تقديم اختبارك الأول
                 </p>
                 <Link
@@ -571,7 +571,7 @@ function StatCard({
   iconBg: string;
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex items-center gap-3">
         <div
           className={`w-11 h-11 rounded-xl ${iconBg} flex items-center justify-center shrink-0`}
@@ -579,10 +579,10 @@ function StatCard({
           <Icon className={`w-5 h-5 ${iconColor}`} />
         </div>
         <div>
-          <p className="text-2xl font-bold text-gray-900 leading-none">
+          <p className="text-2xl font-bold text-gray-900 dark:text-foreground leading-none">
             {value}
           </p>
-          <p className="text-[11px] font-medium text-gray-400 mt-1">{label}</p>
+          <p className="text-[11px] font-medium text-gray-400 dark:text-muted-foreground mt-1">{label}</p>
         </div>
       </div>
     </div>
@@ -610,13 +610,13 @@ function ProgressRow({
       <span className={`text-xs font-semibold ${textColor} w-20 shrink-0`}>
         {label}
       </span>
-      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-gray-100 dark:bg-muted rounded-full overflow-hidden">
         <div
           className={`h-full ${color} rounded-full transition-all duration-500`}
           style={{ width: `${percent}%` }}
         />
       </div>
-      <span className="text-xs font-bold text-gray-600 w-8 text-left">
+      <span className="text-xs font-bold text-gray-600 dark:text-muted-foreground w-8 text-left">
         {count}
       </span>
     </div>
@@ -646,19 +646,19 @@ function InfoCard({
   }[];
 }) {
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+    <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl overflow-hidden shadow-sm">
       {/* Header */}
-      <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
+      <div className="flex items-center gap-3 px-6 py-4 border-b border-gray-100 dark:border-border">
         <div
           className={`w-9 h-9 rounded-xl ${titleIconBg} flex items-center justify-center`}
         >
           <TitleIcon className={`w-5 h-5 ${titleIconColor}`} />
         </div>
-        <h2 className="text-base font-bold text-gray-900">{title}</h2>
+        <h2 className="text-base font-bold text-gray-900 dark:text-foreground">{title}</h2>
       </div>
 
       {/* Rows */}
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-gray-100 dark:divide-border">
         {rows.map((row) => (
           <InfoRow
             key={row.label}
@@ -692,15 +692,15 @@ function InfoRow({
   badge?: { text: string; color: string };
 }) {
   return (
-    <div className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/50 transition-colors">
-      <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0">
-        <Icon className="w-5 h-5 text-gray-400" />
+    <div className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/50 dark:hover:bg-muted/30 transition-colors">
+      <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-muted border border-gray-100 dark:border-border flex items-center justify-center shrink-0">
+        <Icon className="w-5 h-5 text-gray-400 dark:text-muted-foreground" />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-[11px] font-medium text-gray-400 mb-0.5">{label}</p>
+        <p className="text-[11px] font-medium text-gray-400 dark:text-muted-foreground mb-0.5">{label}</p>
         <div className="flex items-center gap-2">
           <p
-            className={`text-sm font-semibold text-gray-800 truncate ${mono ? "font-mono tracking-wide" : ""}`}
+            className={`text-sm font-semibold text-gray-800 dark:text-foreground truncate ${mono ? "font-mono tracking-wide" : ""}`}
           >
             {value}
           </p>

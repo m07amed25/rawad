@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
@@ -21,7 +22,7 @@ export default function HeroSection() {
       tl.fromTo(
         imageRef.current,
         { opacity: 0, scale: 0.6, y: 80, rotateY: -15 },
-        { opacity: 1, scale: 1, y: 0, rotateY: 0, duration: 1.2 }
+        { opacity: 1, scale: 1, y: 0, rotateY: 0, duration: 1.2 },
       );
 
       // Title — clip-reveal slide up
@@ -34,7 +35,7 @@ export default function HeroSection() {
           clipPath: "inset(0% 0 0 0)",
           duration: 0.9,
         },
-        "-=0.7"
+        "-=0.7",
       );
 
       // Subtitle — fade up
@@ -42,7 +43,7 @@ export default function HeroSection() {
         ".hero-subtitle",
         { opacity: 0, y: 40 },
         { opacity: 1, y: 0, duration: 0.7 },
-        "-=0.4"
+        "-=0.4",
       );
 
       // CTA buttons — stagger pop in with slight scale bounce
@@ -57,7 +58,7 @@ export default function HeroSection() {
           stagger: 0.15,
           ease: "back.out(1.7)",
         },
-        "-=0.3"
+        "-=0.3",
       );
 
       // Decorative blur pulse
@@ -65,7 +66,7 @@ export default function HeroSection() {
         blurRef.current,
         { scale: 0.5, opacity: 0 },
         { scale: 1, opacity: 1, duration: 1.5, ease: "power2.out" },
-        "-=1"
+        "-=1",
       );
 
       // Continuous floating animation on the image
@@ -89,7 +90,7 @@ export default function HeroSection() {
         delay: 2,
       });
     },
-    { scope: sectionRef }
+    { scope: sectionRef },
   );
 
   return (
@@ -114,12 +115,18 @@ export default function HeroSection() {
             احتياجاتك بكل سهولة وأمان
           </p>
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-2 lg:w-full lg:justify-start">
-            <button className="hero-cta px-8 py-4 w-full sm:w-auto bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1 text-lg">
+            <Link
+              href="/auth/sign-up"
+              className="hero-cta px-8 py-4 w-full sm:w-auto bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl transition-all duration-300 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1 text-lg flex items-center justify-center cursor-pointer"
+            >
               ابدأ الآن
-            </button>
-            <button className="hero-cta px-8 py-4 w-full sm:w-auto bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 text-lg">
+            </Link>
+            <Link
+              href="#whoisus"
+              className="hero-cta px-8 py-4 w-full sm:w-auto bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-1 text-lg flex items-center justify-center cursor-pointer"
+            >
               اكتشف المزيد
-            </button>
+            </Link>
           </div>
         </div>
 

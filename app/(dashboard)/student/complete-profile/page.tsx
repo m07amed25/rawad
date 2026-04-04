@@ -77,12 +77,12 @@ export default function CompleteProfilePage() {
 
   return (
     <div
-      className="min-h-screen bg-gradient-to-bl from-blue-50 via-white to-indigo-50/40 flex items-center justify-center p-4 sm:p-6"
+      className="min-h-screen bg-gradient-to-bl from-blue-50 via-white to-indigo-50/40 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 flex items-center justify-center p-4 sm:p-6"
       dir="rtl"
     >
       <div className="w-full max-w-lg">
         {/* Card */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-gray-200/60 border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-card rounded-2xl shadow-xl shadow-gray-200/60 dark:shadow-black/20 border border-gray-100 dark:border-border overflow-hidden">
           {/* Header */}
           <div className="relative bg-gradient-to-l from-blue-600 to-indigo-600 px-6 sm:px-8 pt-8 pb-7 text-white">
             {/* Decorative circles */}
@@ -136,7 +136,7 @@ export default function CompleteProfilePage() {
           >
             {/* Error */}
             {errors.root && (
-              <div className="flex items-center gap-2.5 p-3.5 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+              <div className="flex items-center gap-2.5 p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-700 dark:text-red-300">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 <span>{errors.root.message}</span>
               </div>
@@ -144,7 +144,7 @@ export default function CompleteProfilePage() {
 
             {/* University Name */}
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-foreground">
                 <School className="w-4 h-4 text-blue-500" />
                 الجامعة
                 <span className="text-red-400">*</span>
@@ -180,7 +180,7 @@ export default function CompleteProfilePage() {
 
             {/* College */}
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-foreground">
                 <Building2 className="w-4 h-4 text-blue-500" />
                 الكلية
                 <span className="text-red-400">*</span>
@@ -213,10 +213,10 @@ export default function CompleteProfilePage() {
 
             {/* Department */}
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-foreground">
                 <BookOpen className="w-4 h-4 text-indigo-500" />
                 القسم
-                <span className="text-xs font-normal text-gray-400">
+                <span className="text-xs font-normal text-gray-400 dark:text-muted-foreground">
                   (اختياري)
                 </span>
               </label>
@@ -225,10 +225,10 @@ export default function CompleteProfilePage() {
                 value={department}
                 onChange={(e) => setValue("department", e.target.value)}
                 placeholder="مثال: إدارة الأعمال"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-border bg-gray-50/50 dark:bg-muted/30 text-sm text-gray-800 dark:text-foreground placeholder:text-gray-400 dark:placeholder:text-muted-foreground focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/40 focus:bg-white dark:focus:bg-background transition-all"
                 disabled={isSubmitting}
               />
-              <p className="text-[11px] text-gray-400 leading-relaxed">
+              <p className="text-[11px] text-gray-400 dark:text-muted-foreground leading-relaxed">
                 يمكنك تركه فارغاً إذا لم يتم تحديد القسم بعد (مثل طلاب الفرقة
                 الأولى)
               </p>
@@ -236,7 +236,7 @@ export default function CompleteProfilePage() {
 
             {/* Academic Year */}
             <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-foreground">
                 <GraduationCap className="w-4 h-4 text-violet-500" />
                 الفرقة الدراسية
                 <span className="text-red-400">*</span>
@@ -252,8 +252,8 @@ export default function CompleteProfilePage() {
                       disabled={isSubmitting}
                       className={`px-4 py-2.5 rounded-xl border-2 text-sm font-medium transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
                         isActive
-                          ? "border-blue-500 bg-blue-50 text-blue-700"
-                          : "border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50"
+                          ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400"
+                          : "border-gray-200 dark:border-border bg-white dark:bg-card text-gray-600 dark:text-muted-foreground hover:border-gray-300 dark:hover:border-muted-foreground/30 hover:bg-gray-50 dark:hover:bg-muted"
                       }`}
                     >
                       {year.label}
@@ -285,7 +285,7 @@ export default function CompleteProfilePage() {
         </div>
 
         {/* Footer note */}
-        <p className="text-center text-xs text-gray-400 mt-5">
+        <p className="text-center text-xs text-gray-400 dark:text-muted-foreground mt-5">
           يمكنك تعديل هذه البيانات لاحقاً من إعدادات الملف الشخصي
         </p>
       </div>

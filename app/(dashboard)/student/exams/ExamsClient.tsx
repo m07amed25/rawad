@@ -209,15 +209,17 @@ export default function ExamsClient({ exams }: { exams: ExamData[] }) {
       {/* Page Header */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">الامتحانات</h1>
-          <p className="text-base text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-foreground">
+            الامتحانات
+          </h1>
+          <p className="text-base text-gray-500 dark:text-muted-foreground mt-1">
             تصفح جميع الامتحانات المتاحة والسابقة
           </p>
         </div>
         {hasActiveFilters && (
           <button
             onClick={clearAllFilters}
-            className="flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 px-3 py-2 rounded-xl transition-colors cursor-pointer"
+            className="flex items-center gap-1.5 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 px-3 py-2 rounded-xl transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
             مسح الفلاتر
@@ -226,17 +228,17 @@ export default function ExamsClient({ exams }: { exams: ExamData[] }) {
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
+      <div className="bg-white dark:bg-card rounded-2xl border border-gray-200 dark:border-border shadow-sm p-5 space-y-4">
         {/* Search Input */}
         <div
           className={`flex items-center gap-3 rounded-xl px-4 py-3.5 border transition-all ${
             isSearchFocused
-              ? "border-blue-400 ring-[3px] ring-blue-100 bg-white"
-              : "border-gray-200 bg-gray-50 hover:border-gray-300"
+              ? "border-blue-400 ring-[3px] ring-blue-100 dark:ring-blue-900/40 bg-white dark:bg-background"
+              : "border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/30 hover:border-gray-300 dark:hover:border-muted-foreground/30"
           }`}
         >
           <Search
-            className={`w-5 h-5 shrink-0 transition-colors ${isSearchFocused ? "text-blue-500" : "text-gray-400"}`}
+            className={`w-5 h-5 shrink-0 transition-colors ${isSearchFocused ? "text-blue-500" : "text-gray-400 dark:text-muted-foreground"}`}
           />
           <input
             ref={inputRef}
@@ -246,17 +248,17 @@ export default function ExamsClient({ exams }: { exams: ExamData[] }) {
             onChange={(e) => updateParams({ q: e.target.value })}
             onFocus={() => setIsSearchFocused(true)}
             onBlur={() => setIsSearchFocused(false)}
-            className="bg-transparent text-base text-gray-700 placeholder:text-gray-400 outline-none w-full"
+            className="bg-transparent text-base text-gray-700 dark:text-foreground placeholder:text-gray-400 dark:placeholder:text-muted-foreground outline-none w-full"
           />
           {query && (
             <button
               onClick={() => updateParams({ q: "" })}
-              className="p-1 rounded-lg hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+              className="p-1 rounded-lg hover:bg-gray-200 dark:hover:bg-muted text-gray-400 hover:text-gray-600 dark:hover:text-foreground transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           )}
-          <kbd className="hidden lg:inline-flex text-[11px] font-medium text-gray-400 bg-gray-100 border border-gray-200 rounded-md px-2 py-0.5 shrink-0">
+          <kbd className="hidden lg:inline-flex text-[11px] font-medium text-gray-400 dark:text-muted-foreground bg-gray-100 dark:bg-muted border border-gray-200 dark:border-border rounded-md px-2 py-0.5 shrink-0">
             /
           </kbd>
         </div>
@@ -264,7 +266,7 @@ export default function ExamsClient({ exams }: { exams: ExamData[] }) {
         {/* Filters Row */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           {/* Status Tabs */}
-          <div className="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-muted/50 p-1 rounded-xl">
             {statusTabs.map((tab) => {
               const isActive = statusFilter === tab.key;
               const count =
@@ -281,8 +283,8 @@ export default function ExamsClient({ exams }: { exams: ExamData[] }) {
                   onClick={() => updateParams({ status: tab.key })}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${
                     isActive
-                      ? "bg-white text-blue-700 shadow-sm ring-1 ring-gray-200"
-                      : "text-gray-500 hover:text-gray-700"
+                      ? "bg-white dark:bg-background text-blue-700 dark:text-blue-400 shadow-sm ring-1 ring-gray-200 dark:ring-border"
+                      : "text-gray-500 dark:text-muted-foreground hover:text-gray-700 dark:hover:text-foreground"
                   }`}
                 >
                   {tab.label}
@@ -309,7 +311,9 @@ export default function ExamsClient({ exams }: { exams: ExamData[] }) {
         {/* Active Filters Badges */}
         {hasActiveFilters && (
           <div className="flex items-center gap-2 flex-wrap pt-1">
-            <span className="text-xs text-gray-400">الفلاتر النشطة:</span>
+            <span className="text-xs text-gray-400 dark:text-muted-foreground">
+              الفلاتر النشطة:
+            </span>
             {query && (
               <FilterBadge
                 label={`بحث: "${query}"`}
@@ -340,9 +344,9 @@ export default function ExamsClient({ exams }: { exams: ExamData[] }) {
 
       {/* Results Count */}
       <div className="flex items-center justify-between">
-        <p className="text-base text-gray-500">
+        <p className="text-base text-gray-500 dark:text-muted-foreground">
           عرض{" "}
-          <span className="font-semibold text-gray-900">
+          <span className="font-semibold text-gray-900 dark:text-foreground">
             {filteredExams.length}
           </span>{" "}
           امتحان
@@ -371,7 +375,7 @@ function ExamCard({ exam }: { exam: ExamData }) {
   const SubjectIcon = subjectInfo?.icon ?? BookOpen;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-5 transition-all hover:shadow-md hover:border-gray-300 flex flex-col">
+    <div className="bg-white dark:bg-card border border-gray-200 dark:border-border rounded-2xl p-5 transition-all hover:shadow-md hover:border-gray-300 dark:hover:border-muted-foreground/30 flex flex-col">
       {/* Top — Icon + Name + Subject & Status Badge */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
@@ -381,7 +385,7 @@ function ExamCard({ exam }: { exam: ExamData }) {
             <SubjectIcon className="w-5 h-5" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-base font-semibold text-gray-900 leading-snug">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-foreground leading-snug">
               {exam.title}
             </h3>
             <span
@@ -401,13 +405,15 @@ function ExamCard({ exam }: { exam: ExamData }) {
 
       {/* Meta */}
       <div className="space-y-2 mb-4 flex-1">
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-muted-foreground">
           <CalendarDays className="w-4 h-4 shrink-0" />
           <span>{exam.date}</span>
-          <span className="mx-1 text-gray-300">|</span>
+          <span className="mx-1 text-gray-300 dark:text-muted-foreground/40">
+            |
+          </span>
           <span>{exam.time}</span>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-muted-foreground">
           <Clock className="w-4 h-4 shrink-0" />
           <span>{exam.duration}</span>
           <span className="mx-1 text-gray-300">|</span>
@@ -503,8 +509,8 @@ function StartExamDialog({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/60">
-          <DialogClose className="px-5 py-2.5 rounded-xl text-sm font-medium bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors cursor-pointer">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-border bg-gray-50/60 dark:bg-muted/30">
+          <DialogClose className="px-5 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-card border border-gray-200 dark:border-border hover:bg-gray-50 dark:hover:bg-muted text-gray-700 dark:text-foreground transition-colors cursor-pointer">
             إلغاء
           </DialogClose>
           <Link
@@ -535,7 +541,7 @@ function ViewDetailsDialog({
 
   return (
     <Dialog>
-      <DialogTrigger className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-base font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors cursor-pointer">
+      <DialogTrigger className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl text-base font-medium bg-gray-100 dark:bg-muted hover:bg-gray-200 dark:hover:bg-muted/80 text-gray-700 dark:text-foreground transition-colors cursor-pointer">
         <span>{isTaken ? "عرض النتائج" : "عرض التفاصيل"}</span>
         <Eye className="w-4 h-4" />
       </DialogTrigger>
@@ -544,9 +550,9 @@ function ViewDetailsDialog({
         className="gap-0! p-0! sm:max-w-lg! overflow-hidden rounded-2xl"
       >
         {/* Header */}
-        <div className="relative bg-gray-50 border-b border-gray-200 px-6 pt-7 pb-6">
-          <DialogClose className="absolute top-4 inset-e-4 w-8 h-8 rounded-lg bg-gray-200/70 hover:bg-gray-300/70 flex items-center justify-center transition-colors cursor-pointer">
-            <X className="w-4 h-4 text-gray-500" />
+        <div className="relative bg-gray-50 dark:bg-muted/30 border-b border-gray-200 dark:border-border px-6 pt-7 pb-6">
+          <DialogClose className="absolute top-4 inset-e-4 w-8 h-8 rounded-lg bg-gray-200/70 dark:bg-muted hover:bg-gray-300/70 dark:hover:bg-muted/80 flex items-center justify-center transition-colors cursor-pointer">
+            <X className="w-4 h-4 text-gray-500 dark:text-muted-foreground" />
           </DialogClose>
 
           <div className="flex items-center gap-3 mb-4">
@@ -576,10 +582,10 @@ function ViewDetailsDialog({
             </div>
           </div>
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-gray-900">
+            <DialogTitle className="text-xl font-bold text-gray-900 dark:text-foreground">
               {exam.title}
             </DialogTitle>
-            <DialogDescription className="text-gray-500 text-sm mt-1.5">
+            <DialogDescription className="text-gray-500 dark:text-muted-foreground text-sm mt-1.5">
               {isTaken
                 ? "لقد أديت هذا الامتحان بالفعل"
                 : "تفاصيل الامتحان السابق"}
@@ -638,8 +644,8 @@ function ViewDetailsDialog({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/60">
-          <DialogClose className="px-5 py-2.5 rounded-xl text-sm font-medium bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors cursor-pointer">
+        <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-border bg-gray-50/60 dark:bg-muted/30">
+          <DialogClose className="px-5 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-card border border-gray-200 dark:border-border hover:bg-gray-50 dark:hover:bg-muted text-gray-700 dark:text-foreground transition-colors cursor-pointer">
             إغلاق
           </DialogClose>
           <Link
@@ -667,13 +673,17 @@ function DetailItem({
   value: string;
 }) {
   return (
-    <div className="flex items-center gap-3 p-3.5 bg-gray-50 border border-gray-100 rounded-xl">
-      <div className="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center shrink-0">
-        <Icon className="w-4 h-4 text-gray-400" />
+    <div className="flex items-center gap-3 p-3.5 bg-gray-50 dark:bg-muted/30 border border-gray-100 dark:border-border rounded-xl">
+      <div className="w-8 h-8 rounded-lg bg-white dark:bg-card border border-gray-100 dark:border-border flex items-center justify-center shrink-0">
+        <Icon className="w-4 h-4 text-gray-400 dark:text-muted-foreground" />
       </div>
       <div>
-        <p className="text-[11px] font-medium text-gray-400 mb-0.5">{label}</p>
-        <p className="text-sm font-semibold text-gray-800">{value}</p>
+        <p className="text-[11px] font-medium text-gray-400 dark:text-muted-foreground mb-0.5">
+          {label}
+        </p>
+        <p className="text-sm font-semibold text-gray-800 dark:text-foreground">
+          {value}
+        </p>
       </div>
     </div>
   );
@@ -684,13 +694,13 @@ function DetailItem({
 function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center mb-5">
-        <FileX2 className="w-10 h-10 text-gray-400" />
+      <div className="w-20 h-20 rounded-2xl bg-gray-100 dark:bg-muted flex items-center justify-center mb-5">
+        <FileX2 className="w-10 h-10 text-gray-400 dark:text-muted-foreground" />
       </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-2">
+      <h3 className="text-xl font-bold text-gray-900 dark:text-foreground mb-2">
         لا توجد امتحانات مطابقة لبحثك
       </h3>
-      <p className="text-base text-gray-500 max-w-sm">
+      <p className="text-base text-gray-500 dark:text-muted-foreground max-w-sm">
         حاول تغيير كلمات البحث أو تعديل معايير التصفية للعثور على ما تبحث عنه.
       </p>
     </div>
@@ -711,7 +721,7 @@ function SubjectPicker({
 
   return (
     <Popover>
-      <PopoverTrigger className="inline-flex items-center gap-2.5 h-10 px-4 rounded-xl border border-gray-200 bg-gray-50 hover:bg-gray-100 hover:border-gray-300 text-sm font-medium text-gray-700 transition-all cursor-pointer outline-none w-full sm:w-56 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-300">
+      <PopoverTrigger className="inline-flex items-center gap-2.5 h-10 px-4 rounded-xl border border-gray-200 dark:border-border bg-gray-50 dark:bg-muted/30 hover:bg-gray-100 dark:hover:bg-muted hover:border-gray-300 dark:hover:border-muted-foreground/30 text-sm font-medium text-gray-700 dark:text-foreground transition-all cursor-pointer outline-none w-full sm:w-56 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:border-blue-300">
         <span
           className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${activeSubject ? `${activeSubject.bg} ${activeSubject.color}` : "bg-gray-100 text-gray-500"}`}
         >
@@ -746,8 +756,8 @@ function SubjectPicker({
           onClick={() => onChange("all")}
           className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
             value === "all"
-              ? "bg-blue-50 text-blue-700"
-              : "text-gray-600 hover:bg-gray-50"
+              ? "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400"
+              : "text-gray-600 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted"
           }`}
         >
           <span className="w-7 h-7 rounded-lg bg-gray-100 text-gray-500 flex items-center justify-center shrink-0">
@@ -769,8 +779,8 @@ function SubjectPicker({
               onClick={() => onChange(s.name)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                 isActive
-                  ? "bg-blue-50 text-blue-700"
-                  : "text-gray-600 hover:bg-gray-50"
+                  ? "bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400"
+                  : "text-gray-600 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-muted"
               }`}
             >
               <span
@@ -798,7 +808,7 @@ function FilterBadge({
   onRemove: () => void;
 }) {
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium border border-blue-200">
+    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 text-sm font-medium border border-blue-200 dark:border-blue-800">
       {label}
       <button
         onClick={onRemove}

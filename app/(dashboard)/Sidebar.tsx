@@ -89,7 +89,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <>
       {/* Logo */}
-      <div className="p-6 border-b border-gray-100 flex items-center justify-center">
+      <div className="p-6 border-b border-gray-100 dark:border-border flex items-center justify-center">
         <Link href="/" className="flex items-center gap-2" onClick={onNavigate}>
           <Image
             src="/images/logo.png"
@@ -99,7 +99,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             className="rounded-full"
           />
           <span
-            className="text-2xl font-black tracking-wide text-neutral-800"
+            className="text-2xl font-black tracking-wide text-neutral-800 dark:text-foreground"
             style={{ fontFamily: "var(--font-aquatico)" }}
           >
             Rawad
@@ -118,12 +118,12 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
               onClick={onNavigate}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors ${
                 isActive
-                  ? "text-blue-700 bg-blue-50 border border-blue-100 shadow-sm"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 border border-transparent"
+                  ? "text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-900/60 shadow-sm"
+                  : "text-gray-600 dark:text-muted-foreground hover:bg-gray-50 dark:hover:bg-accent hover:text-gray-900 dark:hover:text-foreground border border-transparent"
               }`}
             >
               <item.icon
-                className={`w-5 h-5 ${isActive ? "text-blue-600" : "text-gray-400"}`}
+                className={`w-5 h-5 ${isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-400 dark:text-muted-foreground"}`}
               />
               <span>{item.label}</span>
             </Link>
@@ -132,7 +132,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
 
       {/* Sign Out */}
-      <div className="p-4 border-t border-gray-100">
+      <div className="p-4 border-t border-gray-100 dark:border-border">
         <SignOutButton />
       </div>
     </>
@@ -141,7 +141,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function Sidebar() {
   return (
-    <aside className="w-64 bg-white border-l border-gray-200 hidden md:flex flex-col shadow-sm h-screen sticky top-0 overflow-hidden">
+    <aside className="w-64 bg-white dark:bg-sidebar border-l border-gray-200 dark:border-sidebar-border hidden md:flex flex-col shadow-sm dark:shadow-none h-screen sticky top-0 overflow-hidden">
       <SidebarContent />
     </aside>
   );
@@ -152,7 +152,7 @@ export function MobileSidebarTrigger() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger className="md:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-colors">
+      <SheetTrigger className="md:hidden p-2 text-gray-600 dark:text-muted-foreground hover:text-gray-900 dark:hover:text-foreground hover:bg-gray-100 dark:hover:bg-accent rounded-xl transition-colors">
         <Menu className="w-6 h-6" />
       </SheetTrigger>
       <SheetContent side="right" className="w-64 p-0 flex flex-col">

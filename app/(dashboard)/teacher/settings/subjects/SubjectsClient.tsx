@@ -29,8 +29,6 @@ import { type SubjectInput } from "@/lib/validations";
 import { ACADEMIC_YEARS } from "@/constants";
 import { subjectsFormSchema, type SubjectsFormValues } from "@/lib/validations";
 
-// ─── Component ───────────────────────────────────────────────
-
 export default function TeacherSubjectsPage({
   initialSubjects,
 }: {
