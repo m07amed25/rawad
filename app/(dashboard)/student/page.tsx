@@ -57,8 +57,6 @@ export default async function StudentDashboardPage() {
   }
 
   const studentId = session.user.id;
-  const universityName = session.user.universityName;
-  const department = session.user.department;
 
   // ── 2. Parallel data fetching ──────────────────────────────
   const [availableExams, previousResults] = await Promise.all([

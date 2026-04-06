@@ -76,6 +76,7 @@ export async function getCurrentUserData() {
       id: true,
       name: true,
       email: true,
+      image: true,
       universityName: true,
       department: true,
       role: true,
@@ -105,6 +106,30 @@ export async function updateUserName(name: string) {
   await prisma.user.update({
     where: { id: session.user.id },
     data: { name: trimmed },
+  });
+
+  return { success: true };
+}
+
+/**
+ * Update current user's profile image URL.
+ */
+export async function updateUserImage(imageUrl: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    return { error: "غير مصرح لك" };
+  }
+
+  if (!imageUrl) {
+    return { error: "رابط الصورة غير صالح" };
+  }
+
+  await prisma.user.update({
+    where: { id: session.user.id },
+    data: { image: imageUrl },
   });
 
   return { success: true };

@@ -29,12 +29,13 @@ import {
   AlertTriangle,
   Contrast,
   ShieldCheck,
-  FileText,
-  BarChart3,
   Clock,
   Home,
   Save,
   Loader2,
+  MonitorSmartphone,
+  FileText,
+  BarChart3,
 } from "lucide-react";
 import Image from "next/image";
 import { Switch } from "@/components/ui/switch";
@@ -87,7 +88,7 @@ const textSizeOptions: { key: TextSize; label: string; sample: string }[] = [
 ];
 
 const TEXT_SIZE_KEY = "rawad:textSize";
-const NOTIF_KEY = "rawad:teacher:notifications";
+const NOTIF_KEY = "rawad:student:notifications";
 
 // ── Props ──────────────────────────────────────────────────────────────────
 
@@ -101,7 +102,7 @@ interface Props {
 
 // ── Client Component ───────────────────────────────────────────────────────
 
-export default function TeacherSettingsClient({
+export default function StudentSettingsClient({
   initialName,
   email,
   initialImage,
@@ -122,11 +123,12 @@ export default function TeacherSettingsClient({
   // ── Appearance ────────────────────────────────────────────────────────────
   const [textSize, setTextSizeState] = useState<TextSize>("normal");
   const [highContrast, setHighContrast] = useState(false);
+  const [screenReaderMode, setScreenReaderMode] = useState(false);
 
   // ── Notifications (persisted in localStorage) ────────────────────────────
-  const [notifyExamEnd, setNotifyExamEnd] = useState(true);
-  const [weeklyReport, setWeeklyReport] = useState(true);
-  const [systemAlerts, setSystemAlerts] = useState(true);
+  const [notifyNewExams, setNotifyNewExams] = useState(true);
+  const [notifyResults, setNotifyResults] = useState(true);
+  const [notifyExamReminders, setNotifyExamReminders] = useState(true);
 
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
 
@@ -137,13 +139,11 @@ export default function TeacherSettingsClient({
   const [isPending, startTransition] = useTransition();
   const [passwordSaved, setPasswordSaved] = useState(false);
 
-  // ── Effects ───────────────────────────────────────────────────────────────
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
 
-    // Restore text size
     const savedSize = localStorage.getItem(TEXT_SIZE_KEY) as TextSize | null;
     if (savedSize && ["normal", "large", "xlarge"].includes(savedSize)) {
       setTextSizeState(savedSize);
@@ -154,16 +154,15 @@ export default function TeacherSettingsClient({
       const saved = localStorage.getItem(NOTIF_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        setNotifyExamEnd(parsed.notifyExamEnd ?? true);
-        setWeeklyReport(parsed.weeklyReport ?? true);
-        setSystemAlerts(parsed.systemAlerts ?? true);
+        setNotifyNewExams(parsed.notifyNewExams ?? true);
+        setNotifyResults(parsed.notifyResults ?? true);
+        setNotifyExamReminders(parsed.notifyExamReminders ?? true);
       }
     } catch {
       // ignore
     }
   }, []);
 
-  // Apply text size to document
   useEffect(() => {
     if (!mounted) return;
     const map: Record<TextSize, string> = {
@@ -173,8 +172,6 @@ export default function TeacherSettingsClient({
     };
     document.documentElement.style.fontSize = map[textSize];
   }, [textSize, mounted]);
-
-  // ── Handlers ───────────────────────────────────────────────────────────────
 
   async function handleSaveProfile() {
     const trimmed = fullName.trim();
@@ -230,7 +227,7 @@ export default function TeacherSettingsClient({
   // Initials from real name
   const initials = fullName
     .split(" ")
-    .filter((w) => w.length > 1)
+    .filter((w) => w.length > 0)
     .slice(0, 2)
     .map((w) => w[0])
     .join("");
@@ -242,7 +239,7 @@ export default function TeacherSettingsClient({
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink
-              render={<Link href="/teacher" />}
+              render={<Link href="/student" />}
               className="flex items-center gap-1.5"
             >
               <Home className="w-3.5 h-3.5" />
@@ -306,6 +303,7 @@ export default function TeacherSettingsClient({
           </TabsList>
         </div>
 
+        {/* ── Tab 1: Profile ──────────────────────────────────────────── */}
         <TabsContent value="profile" className="space-y-5 mt-1">
           {/* Avatar Section */}
           <SettingsCard
@@ -461,6 +459,7 @@ export default function TeacherSettingsClient({
           </div>
         </TabsContent>
 
+        {/* ── Tab 2: Appearance ────────────────────────────────────────── */}
         <TabsContent value="appearance" className="space-y-5 mt-1">
           {/* Theme Selector */}
           <SettingsCard
@@ -566,10 +565,19 @@ export default function TeacherSettingsClient({
                 checked={highContrast}
                 onCheckedChange={setHighContrast}
               />
+              <ToggleRow
+                icon={MonitorSmartphone}
+                accentColor="indigo"
+                label="تحسينات قارئ الشاشة"
+                description="تبسيط التخطيط لتوافق أفضل مع قارئات الشاشة"
+                checked={screenReaderMode}
+                onCheckedChange={setScreenReaderMode}
+              />
             </div>
           </SettingsCard>
         </TabsContent>
 
+        {/* ── Tab 3: Notifications ─────────────────────────────────────── */}
         <TabsContent value="notifications" className="space-y-5 mt-1">
           <SettingsCard
             icon={MailIcon}
@@ -582,32 +590,24 @@ export default function TeacherSettingsClient({
               <ToggleRow
                 icon={FileText}
                 accentColor="blue"
-                label="إشعار عند انتهاء امتحان"
-                description="إشعار تلقائي عند انتهاء وقت أي امتحان قمت بإنشائه"
-                checked={notifyExamEnd}
+                label="امتحانات جديدة متاحة"
+                description="إشعار عند إضافة امتحان جديد يمكنك التقدم له"
+                checked={notifyNewExams}
                 onCheckedChange={(v) => {
-                  setNotifyExamEnd(v);
-                  const current = {
-                    notifyExamEnd: v,
-                    weeklyReport,
-                    systemAlerts,
-                  };
+                  setNotifyNewExams(v);
+                  const current = { notifyNewExams: v, notifyResults, notifyExamReminders };
                   localStorage.setItem(NOTIF_KEY, JSON.stringify(current));
                 }}
               />
               <ToggleRow
                 icon={BarChart3}
                 accentColor="violet"
-                label="إرسال تقرير أسبوعي بالنتائج"
-                description="ملخص أسبوعي يتضمن إحصائيات أداء الطلاب ونتائج الامتحانات"
-                checked={weeklyReport}
+                label="تم نشر النتائج"
+                description="إشعار فور نشر نتائج امتحان قمت بتقديمه"
+                checked={notifyResults}
                 onCheckedChange={(v) => {
-                  setWeeklyReport(v);
-                  const current = {
-                    notifyExamEnd,
-                    weeklyReport: v,
-                    systemAlerts,
-                  };
+                  setNotifyResults(v);
+                  const current = { notifyNewExams, notifyResults: v, notifyExamReminders };
                   localStorage.setItem(NOTIF_KEY, JSON.stringify(current));
                 }}
               />
@@ -619,22 +619,18 @@ export default function TeacherSettingsClient({
             iconColor="text-amber-600"
             iconBg="bg-amber-50 dark:bg-amber-900/30"
             title="تنبيهات النظام"
-            description="التحكم في تنبيهات التحديثات والصيانة"
+            description="التحكم في التنبيهات والتذكيرات"
           >
             <div className="space-y-3">
               <ToggleRow
                 icon={Clock}
                 accentColor="amber"
-                label="تنبيهات النظام والتحديثات"
-                description="إشعارات حول تحديثات المنصة وأوقات الصيانة المجدولة"
-                checked={systemAlerts}
+                label="تذكير قبل انتهاء الامتحان"
+                description="تنبيه قبل انتهاء وقت الامتحان بـ 5 دقائق"
+                checked={notifyExamReminders}
                 onCheckedChange={(v) => {
-                  setSystemAlerts(v);
-                  const current = {
-                    notifyExamEnd,
-                    weeklyReport,
-                    systemAlerts: v,
-                  };
+                  setNotifyExamReminders(v);
+                  const current = { notifyNewExams, notifyResults, notifyExamReminders: v };
                   localStorage.setItem(NOTIF_KEY, JSON.stringify(current));
                 }}
               />
@@ -643,6 +639,7 @@ export default function TeacherSettingsClient({
         </TabsContent>
 
         <TabsContent value="security" className="space-y-5 mt-1">
+          {/* Two-Factor Auth */}
           <SettingsCard
             icon={Smartphone}
             iconColor="text-emerald-600"
@@ -660,30 +657,13 @@ export default function TeacherSettingsClient({
                 onCheckedChange={setTwoFactorEnabled}
               />
             </div>
-
-            {twoFactorEnabled && (
-              <div className="flex items-start gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl mt-4">
-                <div className="w-9 h-9 rounded-lg bg-emerald-100 dark:bg-emerald-800 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-[18px] h-[18px] text-emerald-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-emerald-800 dark:text-emerald-300">
-                    المصادقة الثنائية مفعّلة
-                  </p>
-                  <p className="text-[13px] text-emerald-600 dark:text-emerald-400 mt-0.5 leading-relaxed">
-                    حسابك محمي بطبقة إضافية من الأمان. سيُطلب منك إدخال رمز OTP
-                    عند كل تسجيل دخول.
-                  </p>
-                </div>
-              </div>
-            )}
           </SettingsCard>
 
           {/* Change Password */}
           <SettingsCard
             icon={KeyRound}
             iconColor="text-rose-600"
-            iconBg="bg-rose-50 dark:bg-rose-900/30"
+            iconBg="bg-rose-50 dark:bg-rose-950/40"
             title="تغيير كلمة المرور"
             description="تحديث كلمة المرور الخاصة بحسابك بشكل دوري لتعزيز الأمان"
           >
@@ -691,7 +671,7 @@ export default function TeacherSettingsClient({
               open={passwordDialogOpen}
               onOpenChange={setPasswordDialogOpen}
             >
-              <DialogTrigger className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 hover:bg-gray-800 text-white transition-colors cursor-pointer shadow-sm">
+              <DialogTrigger className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 dark:bg-blue-600 hover:bg-gray-800 dark:hover:bg-blue-500 text-white transition-colors cursor-pointer shadow-sm">
                 <Lock className="w-4 h-4" />
                 <span>تغيير كلمة المرور</span>
               </DialogTrigger>
@@ -699,9 +679,8 @@ export default function TeacherSettingsClient({
                 showCloseButton={false}
                 className="gap-0! p-0! sm:max-w-md! overflow-hidden rounded-2xl"
               >
-                {/* Header */}
-                <div className="relative bg-gray-900 px-6 pt-7 pb-6 text-white">
-                  <DialogClose className="absolute top-4 inset-e-4 w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors cursor-pointer">
+                <div className="relative bg-gray-900 dark:bg-muted px-6 pt-7 pb-6 text-white">
+                  <DialogClose className="absolute top-4 inset-e-4 w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors cursor-pointer text-white">
                     <span className="sr-only">إغلاق</span>
                     <svg
                       className="w-4 h-4 text-white"
@@ -717,7 +696,6 @@ export default function TeacherSettingsClient({
                       />
                     </svg>
                   </DialogClose>
-
                   <div className="flex items-center gap-3 mb-4">
                     <div className="w-11 h-11 rounded-xl flex items-center justify-center bg-white/10">
                       <KeyRound className="w-5 h-5" />
@@ -732,9 +710,7 @@ export default function TeacherSettingsClient({
                     </DialogDescription>
                   </DialogHeader>
                 </div>
-
-                {/* Form */}
-                <div className="px-6 py-6 space-y-4">
+                <div className="px-6 py-6 space-y-4 bg-white dark:bg-gray-800">
                   <PasswordField
                     label="كلمة المرور الحالية"
                     value={currentPassword}
@@ -753,7 +729,6 @@ export default function TeacherSettingsClient({
                     onChange={setConfirmPassword}
                     placeholder="أعد إدخال كلمة المرور الجديدة"
                   />
-
                   {confirmPassword && !passwordsMatch && (
                     <div className="flex items-center gap-2 text-sm text-red-600">
                       <AlertTriangle className="w-4 h-4 shrink-0" />
@@ -761,39 +736,32 @@ export default function TeacherSettingsClient({
                     </div>
                   )}
                 </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/60">
-                  <DialogClose className="px-5 py-2.5 rounded-xl text-sm font-medium bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 transition-colors cursor-pointer">
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50">
+                  <DialogClose className="px-5 py-2.5 rounded-xl text-sm font-medium bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer">
                     إلغاء
                   </DialogClose>
                   <button
                     onClick={handlePasswordSubmit}
                     disabled={!canSubmitPassword || isPending || passwordSaved}
-                    className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 hover:bg-gray-800 text-white transition-colors cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-gray-900 dark:bg-blue-600 hover:bg-gray-800 dark:hover:bg-blue-500 text-white transition-colors cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {isPending ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>جاري التحديث...</span>
+                        <span>جاري الحفظ...</span>
                       </>
                     ) : passwordSaved ? (
                       <>
                         <CheckCircle2 className="w-4 h-4" />
-                        <span>تم التحديث</span>
+                        <span>تم الحفظ</span>
                       </>
                     ) : (
-                      <span>تحديث كلمة المرور</span>
+                      <span>حفظ كلمة المرور</span>
                     )}
                   </button>
                 </div>
               </DialogContent>
             </Dialog>
-
-            <p className="text-[13px] text-gray-400 mt-3 leading-relaxed">
-              يُنصح بتغيير كلمة المرور كل 3 أشهر واستخدام مزيج من الأحرف
-              والأرقام والرموز.
-            </p>
           </SettingsCard>
         </TabsContent>
       </Tabs>
@@ -801,7 +769,7 @@ export default function TeacherSettingsClient({
   );
 }
 
-// ── Settings Card ───────────────────────────────────────────────────────────
+// ── Settings Card ──────────────────────────────────────────────────────────
 
 function SettingsCard({
   icon: Icon,
@@ -819,18 +787,18 @@ function SettingsCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700/60 rounded-2xl overflow-hidden shadow-sm">
-      <div className="flex items-center gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 dark:border-gray-700/60">
+    <div className="bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700/50 rounded-2xl overflow-hidden shadow-xs backdrop-blur-sm">
+      <div className="flex items-center gap-3 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 dark:border-gray-700/50 bg-gray-50/30 dark:bg-gray-800/30">
         <div
           className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}
         >
           <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${iconColor}`} />
         </div>
         <div className="min-w-0">
-          <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-50">
+          <h2 className="text-sm sm:text-base font-bold text-gray-900 dark:text-gray-100">
             {title}
           </h2>
-          <p className="text-[11px] sm:text-xs text-gray-400 dark:text-gray-500 mt-0.5 line-clamp-2">
+          <p className="text-[11px] sm:text-xs text-gray-400 dark:text-gray-400 mt-0.5 line-clamp-2">
             {description}
           </p>
         </div>
@@ -840,7 +808,7 @@ function SettingsCard({
   );
 }
 
-// ── Input Field ─────────────────────────────────────────────────────────────
+// ── Shared UI Components ──────────────────────────────────────────────────
 
 function InputField({
   label,
@@ -861,38 +829,57 @@ function InputField({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 pr-1">
         {label}
       </label>
-      <div className="relative">
-        <div className="absolute inset-y-0 inset-s-0 flex items-center ps-3.5 pointer-events-none">
-          <Icon
-            className={`w-4 h-4 ${readOnly ? "text-gray-300 dark:text-gray-600" : "text-gray-400"}`}
-          />
+      <div className="relative group">
+        <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
+          <Icon className="w-4 h-4" />
         </div>
         <input
           type="text"
-          value={value}
-          onChange={onChange ? (e) => onChange(e.target.value) : undefined}
-          placeholder={placeholder}
+          value={value || ""}
+          onChange={(e) => onChange?.(e.target.value)}
           readOnly={readOnly}
-          className={`w-full ps-10 pe-4 py-2.5 rounded-xl border text-sm transition-all ${
+          placeholder={placeholder}
+          className={`w-full pr-10 pl-4 py-2.5 rounded-xl border transition-all text-sm ${
             readOnly
-              ? "border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-500 cursor-not-allowed"
-              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30"
+              ? "bg-gray-50 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700 text-gray-500 cursor-not-allowed"
+              : "bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20"
           }`}
         />
       </div>
-      {hint && (
-        <p className="text-[11px] text-gray-400 dark:text-gray-500 leading-relaxed">
-          {hint}
-        </p>
-      )}
+      {hint && <p className="text-[11px] text-gray-400 pr-1">{hint}</p>}
     </div>
   );
 }
 
-// ── Color Map ───────────────────────────────────────────────────────────────
+function PasswordField({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  return (
+    <div className="space-y-1.5 font-sans">
+      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        {label}
+      </label>
+      <input
+        type="password"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 text-sm text-gray-800 dark:text-gray-100 placeholder:text-gray-400 focus:outline-none focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/20 transition-all font-sans"
+      />
+    </div>
+  );
+}
 
 type AccentColor = "teal" | "indigo" | "blue" | "violet" | "amber" | "emerald";
 
@@ -908,56 +895,54 @@ const accentStyles: Record<
   }
 > = {
   teal: {
-    iconBg: "bg-teal-100 dark:bg-teal-800",
+    iconBg: "bg-teal-100 dark:bg-teal-900/50",
     iconColor: "text-teal-600",
-    activeBg: "bg-teal-50/60 dark:bg-teal-900/30",
-    activeBorder: "border-teal-200 dark:border-teal-700",
-    badgeBg: "bg-teal-100 dark:bg-teal-800",
-    badgeText: "text-teal-700 dark:text-teal-300",
+    activeBg: "bg-teal-50/60 dark:bg-teal-950/40",
+    activeBorder: "border-teal-200 dark:border-teal-900",
+    badgeBg: "bg-teal-100 dark:bg-teal-900/60",
+    badgeText: "text-teal-700 dark:text-teal-400",
   },
   indigo: {
-    iconBg: "bg-indigo-100 dark:bg-indigo-800",
+    iconBg: "bg-indigo-100 dark:bg-indigo-900/50",
     iconColor: "text-indigo-600",
-    activeBg: "bg-indigo-50/60 dark:bg-indigo-900/30",
-    activeBorder: "border-indigo-200 dark:border-indigo-700",
-    badgeBg: "bg-indigo-100 dark:bg-indigo-800",
-    badgeText: "text-indigo-700 dark:text-indigo-300",
+    activeBg: "bg-indigo-50/60 dark:bg-indigo-950/40",
+    activeBorder: "border-indigo-200 dark:border-indigo-900",
+    badgeBg: "bg-indigo-100 dark:bg-indigo-900/60",
+    badgeText: "text-indigo-700 dark:text-indigo-400",
   },
   blue: {
-    iconBg: "bg-blue-100 dark:bg-blue-800",
+    iconBg: "bg-blue-100 dark:bg-blue-900/50",
     iconColor: "text-blue-600",
-    activeBg: "bg-blue-50/60 dark:bg-blue-900/30",
-    activeBorder: "border-blue-200 dark:border-blue-700",
-    badgeBg: "bg-blue-100 dark:bg-blue-800",
-    badgeText: "text-blue-700 dark:text-blue-300",
+    activeBg: "bg-blue-50/60 dark:bg-blue-950/40",
+    activeBorder: "border-blue-200 dark:border-blue-900",
+    badgeBg: "bg-blue-100 dark:bg-blue-900/60",
+    badgeText: "text-blue-700 dark:text-blue-400",
   },
   violet: {
-    iconBg: "bg-violet-100 dark:bg-violet-800",
+    iconBg: "bg-violet-100 dark:bg-violet-900/50",
     iconColor: "text-violet-600",
-    activeBg: "bg-violet-50/60 dark:bg-violet-900/30",
-    activeBorder: "border-violet-200 dark:border-violet-700",
-    badgeBg: "bg-violet-100 dark:bg-violet-800",
-    badgeText: "text-violet-700 dark:text-violet-300",
+    activeBg: "bg-violet-50/60 dark:bg-violet-950/40",
+    activeBorder: "border-violet-200 dark:border-violet-900",
+    badgeBg: "bg-violet-100 dark:bg-violet-900/60",
+    badgeText: "text-violet-700 dark:text-violet-400",
   },
   amber: {
-    iconBg: "bg-amber-100 dark:bg-amber-800",
+    iconBg: "bg-amber-100 dark:bg-amber-900/50",
     iconColor: "text-amber-600",
-    activeBg: "bg-amber-50/60 dark:bg-amber-900/30",
-    activeBorder: "border-amber-200 dark:border-amber-700",
-    badgeBg: "bg-amber-100 dark:bg-amber-800",
-    badgeText: "text-amber-700 dark:text-amber-300",
+    activeBg: "bg-amber-50/60 dark:bg-amber-950/40",
+    activeBorder: "border-amber-200 dark:border-amber-900",
+    badgeBg: "bg-amber-100 dark:bg-amber-900/60",
+    badgeText: "text-amber-700 dark:text-amber-400",
   },
   emerald: {
-    iconBg: "bg-emerald-100 dark:bg-emerald-800",
+    iconBg: "bg-emerald-100 dark:bg-emerald-900/50",
     iconColor: "text-emerald-600",
-    activeBg: "bg-emerald-50/60 dark:bg-emerald-900/30",
-    activeBorder: "border-emerald-200 dark:border-emerald-700",
-    badgeBg: "bg-emerald-100 dark:bg-emerald-800",
-    badgeText: "text-emerald-700 dark:text-emerald-300",
+    activeBg: "bg-emerald-50/60 dark:bg-emerald-950/40",
+    activeBorder: "border-emerald-200 dark:border-emerald-900",
+    badgeBg: "bg-emerald-100 dark:bg-emerald-900/60",
+    badgeText: "text-emerald-700 dark:text-emerald-400",
   },
 };
-
-// ── Toggle Row ──────────────────────────────────────────────────────────────
 
 function ToggleRow({
   icon: Icon,
@@ -975,7 +960,6 @@ function ToggleRow({
   onCheckedChange: (v: boolean) => void;
 }) {
   const s = accentStyles[accentColor];
-
   return (
     <div
       role="button"
@@ -987,10 +971,10 @@ function ToggleRow({
           onCheckedChange(!checked);
         }
       }}
-      className={`flex items-center gap-3 sm:gap-4 w-full rounded-xl px-3 sm:px-4 py-3 sm:py-3.5 border transition-colors duration-200 cursor-pointer text-start ${
+      className={`flex items-center gap-3 sm:gap-4 w-full rounded-xl px-3 sm:px-4 py-3 sm:py-3.5 border transition-all duration-200 cursor-pointer text-start ${
         checked
           ? `${s.activeBg} ${s.activeBorder}`
-          : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-gray-300 hover:bg-gray-50/50"
+          : "bg-white dark:bg-gray-800/50 border-gray-200 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50/50 dark:hover:bg-gray-800"
       }`}
     >
       <div
@@ -1000,11 +984,10 @@ function ToggleRow({
           className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-200 ${checked ? s.iconColor : "text-gray-400 dark:text-gray-500"}`}
         />
       </div>
-
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5 sm:gap-2">
           <p
-            className={`text-xs sm:text-sm font-semibold ${checked ? "text-gray-900 dark:text-gray-50" : "text-gray-700 dark:text-gray-300"}`}
+            className={`text-xs sm:text-sm font-semibold ${checked ? "text-gray-900 dark:text-gray-100" : "text-gray-700 dark:text-gray-300"}`}
           >
             {label}
           </p>
@@ -1014,46 +997,16 @@ function ToggleRow({
             {checked ? "مفعّل" : "معطّل"}
           </span>
         </div>
-        <p className="text-[11px] sm:text-xs text-gray-400 dark:text-gray-500 mt-0.5 leading-relaxed line-clamp-2">
+        <p className="text-[11px] sm:text-xs text-gray-400 dark:text-gray-400 mt-0.5 leading-relaxed line-clamp-2">
           {description}
         </p>
       </div>
-
       <div
         className="shrink-0 relative z-0"
         onClick={(e) => e.stopPropagation()}
       >
         <Switch checked={checked} onCheckedChange={onCheckedChange} />
       </div>
-    </div>
-  );
-}
-
-// ── Password Field ──────────────────────────────────────────────────────────
-
-function PasswordField({
-  label,
-  value,
-  onChange,
-  placeholder,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  placeholder: string;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-        {label}
-      </label>
-      <input
-        type="password"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 transition-all"
-      />
     </div>
   );
 }

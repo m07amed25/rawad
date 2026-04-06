@@ -28,6 +28,22 @@ export const ourFileRouter = {
       console.log("File URL:", file.url);
       return { uploadedBy: metadata.userId, url: file.url };
     }),
+
+  profileImage: f({
+    image: { maxFileSize: "2MB", maxFileCount: 1 },
+  })
+    .middleware(async () => {
+      const session = await auth.api.getSession({
+        headers: await headers(),
+      });
+      if (!session?.user) {
+        throw new Error("Unauthorized — Please sign in to upload a profile image");
+      }
+      return { userId: session.user.id };
+    })
+    .onUploadComplete(async ({ metadata, file }) => {
+      return { uploadedBy: metadata.userId, url: file.url };
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

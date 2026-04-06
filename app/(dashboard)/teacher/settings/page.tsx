@@ -20,6 +20,7 @@ export default async function TeacherSettingsPage() {
     <TeacherSettingsClient
       initialName={session.user.name ?? ""}
       email={session.user.email ?? ""}
+      initialImage={session.user.image ?? ""}
       university={session.user.universityName ?? ""}
       department={session.user.department ?? ""}
     />

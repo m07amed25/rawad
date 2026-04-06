@@ -73,7 +73,6 @@ export default async function DashboardLayout({
             {/* Divider */}
             <div className="w-px h-8 bg-gray-200 dark:bg-border mx-1 hidden sm:block" />
 
-            {/* Profile */}
             <ProfilePopover
               user={{
                 name: session.user.name,
@@ -83,6 +82,7 @@ export default async function DashboardLayout({
                 universityName: session.user.universityName,
                 studentCode: session.user.studentCode,
                 nationalId: session.user.nationalId,
+                image: session.user.image,
               }}
             />
           </div>

@@ -27,6 +27,7 @@ interface ProfilePopoverProps {
     universityName?: string | null;
     studentCode?: string | null;
     nationalId?: string | null;
+    image?: string | null;
   };
 }
 
@@ -38,8 +39,16 @@ export function ProfilePopover({ user }: ProfilePopoverProps) {
   return (
     <Popover>
       <PopoverTrigger className="flex items-center gap-3 ps-3 pe-1 py-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-accent transition-colors cursor-pointer outline-none">
-        <div className="w-9 h-9 rounded-full bg-linear-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shadow-md ring-2 ring-white dark:ring-border">
-          {user.name?.charAt(0)}
+        <div className="w-9 h-9 rounded-full bg-linear-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-sm font-bold shadow-md ring-2 ring-white dark:ring-border overflow-hidden relative">
+          {user.image ? (
+            <img
+              src={user.image}
+              alt={user.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            user.name?.charAt(0)
+          )}
         </div>
         <div className="text-start hidden sm:block">
           <p className="text-sm font-semibold text-gray-900 dark:text-foreground leading-tight">
@@ -60,8 +69,16 @@ export function ProfilePopover({ user }: ProfilePopoverProps) {
       >
         {/* Header */}
         <div className="p-4 flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-lg font-bold shadow-md shrink-0">
-            {user.name?.charAt(0)}
+          <div className="w-12 h-12 rounded-full bg-linear-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-lg font-bold shadow-md shrink-0 overflow-hidden relative">
+            {user.image ? (
+              <img
+                src={user.image}
+                alt={user.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              user.name?.charAt(0)
+            )}
           </div>
           <div className="min-w-0">
             <p className="text-sm font-bold text-gray-900 dark:text-foreground truncate">

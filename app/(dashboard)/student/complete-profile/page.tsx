@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { completeAcademicProfile } from "@/app/actions/onboarding";
 import { UNIVERSITIES, FACULTIES } from "@/constants/academic-data";
 import { SearchableSelect } from "@/components/ui/searchable-select";
@@ -34,7 +33,7 @@ type FormValues = {
 export default function CompleteProfilePage() {
   const {
     setValue,
-    watch,
+    control,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
@@ -47,10 +46,10 @@ export default function CompleteProfilePage() {
     },
   });
 
-  const universityName = watch("universityName");
-  const college = watch("college");
-  const academicYear = watch("academicYear");
-  const department = watch("department");
+  const universityName = useWatch({ control, name: "universityName" });
+  const college = useWatch({ control, name: "college" });
+  const academicYear = useWatch({ control, name: "academicYear" });
+  const department = useWatch({ control, name: "department" });
 
   const canSubmit =
     universityName.selected !== "" &&

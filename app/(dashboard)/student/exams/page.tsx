@@ -21,8 +21,6 @@ export default async function ExamsPage() {
     redirect("/teacher");
   }
 
-  const universityName = session.user.universityName;
-  const department = session.user.department;
   const studentId = session.user.id;
 
   // -- 2. Fetch exams where this student is explicitly allowed --
