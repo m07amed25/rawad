@@ -11,6 +11,7 @@ const STATUS_MAP = {
   PASSED: "passed",
   FAILED: "failed",
   UNDER_GRADING: "grading",
+  IN_PROGRESS: "in_progress",
 } as const;
 
 export default async function ResultsPage() {
@@ -31,7 +32,11 @@ export default async function ResultsPage() {
 
   // -- 2. Fetch student results with exam info ----------------
   const results = await prisma.result.findMany({
-    where: { studentId, isArchived: false },
+    where: {
+      studentId,
+      isArchived: false,
+      status: { not: "IN_PROGRESS" },
+    },
     select: {
       id: true,
       score: true,

@@ -67,16 +67,17 @@ export async function submitExam(
 
   try {
     // ── 3. Check for Duplicate Submission ────────────────────
+    // Only block if a non-archived result exists AND its status is NOT 'IN_PROGRESS'
     const existingResult = await prisma.result.findFirst({
       where: {
         studentId,
         examId,
         isArchived: false,
       },
-      select: { id: true },
+      select: { id: true, status: true },
     });
 
-    if (existingResult) {
+    if (existingResult && existingResult.status !== "IN_PROGRESS") {
       return { error: "لقد قمت بتقديم هذا الامتحان بالفعل" };
     }
 
@@ -201,9 +202,26 @@ export async function submitExam(
 
     // ── 8. Atomic Transaction: Create Result + StudentAnswers ─
     const result = await prisma.$transaction(async (tx) => {
-      // 8a. Create the Result record
-      const resultRecord = await tx.result.create({
-        data: {
+      // 8a. Create or Update the Result record
+      // If we already have an IN_PROGRESS record, update it. Otherwise create new.
+      const resultRecord = await tx.result.upsert({
+        where: {
+          studentId_examId_isArchived: {
+            studentId,
+            examId,
+            isArchived: false,
+          },
+        },
+        update: {
+          score: totalScore,
+          maxScore,
+          correctAnswers: correctAnswersCount,
+          wrongAnswers: wrongAnswersCount,
+          timeTaken: parsed.data.timeTaken,
+          violationsCount: parsed.data.violationsCount,
+          status,
+        },
+        create: {
           studentId,
           examId,
           score: totalScore,
@@ -213,6 +231,7 @@ export async function submitExam(
           timeTaken: parsed.data.timeTaken,
           violationsCount: parsed.data.violationsCount,
           status,
+          isArchived: false,
         },
       });
 

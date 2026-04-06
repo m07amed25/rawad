@@ -38,7 +38,7 @@ import {
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type ResultStatus = "passed" | "failed" | "grading";
+type ResultStatus = "passed" | "failed" | "grading" | "in_progress";
 
 export interface ResultData {
   id: string;
@@ -136,6 +136,15 @@ const statusConfig = {
     ringColor: "stroke-amber-400",
     trailColor: "stroke-amber-100 dark:stroke-amber-900",
   },
+  in_progress: {
+    label: "يؤدي الامتحان",
+    bg: "bg-blue-50 dark:bg-blue-950/30",
+    text: "text-blue-700 dark:text-blue-300",
+    border: "border-blue-200 dark:border-blue-800",
+    dot: "bg-blue-500",
+    ringColor: "stroke-blue-400",
+    trailColor: "stroke-blue-100 dark:stroke-blue-900",
+  },
 };
 
 const statusTabs = [
@@ -208,7 +217,9 @@ function ScoreRing({
             <span className="text-2xl font-bold text-gray-900 dark:text-foreground leading-none">
               {score}
             </span>
-            <span className="text-[11px] text-gray-400 dark:text-muted-foreground mt-0.5">من {total}</span>
+            <span className="text-[11px] text-gray-400 dark:text-muted-foreground mt-0.5">
+              من {total}
+            </span>
           </>
         )}
       </div>
@@ -292,7 +303,9 @@ function StatsOverview({ results }: { results: ResultData[] }) {
             <p className="text-[11px] font-medium text-gray-400 dark:text-muted-foreground truncate">
               {stat.label}
             </p>
-            <p className="text-lg font-bold text-gray-900 dark:text-foreground">{stat.value}</p>
+            <p className="text-lg font-bold text-gray-900 dark:text-foreground">
+              {stat.value}
+            </p>
           </div>
         </div>
       ))}
@@ -435,7 +448,9 @@ function ResultCard({ result }: { result: ResultData }) {
               >
                 {result.subject}
               </span>
-              <span className="text-gray-300 dark:text-muted-foreground/40">·</span>
+              <span className="text-gray-300 dark:text-muted-foreground/40">
+                ·
+              </span>
               <span className="text-xs text-gray-400 dark:text-muted-foreground flex items-center gap-1">
                 <CalendarDays className="w-3 h-3" />
                 {result.date}
@@ -626,7 +641,9 @@ export default function ResultsClient({ results }: { results: ResultData[] }) {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-foreground">نتائجي</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-foreground">
+          نتائجي
+        </h1>
         <p className="text-base text-gray-500 dark:text-muted-foreground mt-1">
           تابع نتائج امتحاناتك وأدائك الأكاديمي
         </p>
