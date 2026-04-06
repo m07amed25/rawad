@@ -1130,8 +1130,6 @@ function AccessibilityToolbar({
   );
 }
 
-// ─── Main Client Component ───────────────────────────────────────────────────
-
 export default function ExamClient({
   exam,
   disabilityType = "NONE",

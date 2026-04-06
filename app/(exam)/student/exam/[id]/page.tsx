@@ -35,10 +35,12 @@ export default async function ExamPage({
       examId,
       isArchived: false,
     },
-    select: { id: true },
+    select: { id: true, status: true, createdAt: true },
   });
 
-  if (existingResult) {
+  // Only block if result is terminal
+  const terminalStatuses = ["PASSED", "FAILED", "SUBMITTED", "UNDER_GRADING"];
+  if (existingResult && terminalStatuses.includes(existingResult.status)) {
     return (
       <div
         className="min-h-screen flex items-center justify-center bg-gray-50 p-6"
@@ -166,5 +168,12 @@ export default async function ExamPage({
     | "LEARNING"
     | "MULTIPLE";
 
-  return <ExamClient exam={sanitizedExam} disabilityType={disabilityType} />;
+  // Pass startTime/createdAt to ExamClient for timer calculation
+  return (
+    <ExamClient
+      exam={sanitizedExam}
+      disabilityType={disabilityType}
+      startTime={existingResult?.createdAt ?? null}
+    />
+  );
 }

@@ -466,8 +466,13 @@ export async function startExamAttempt(examId: string) {
       },
     });
 
-    if (existing) {
+    // If already IN_PROGRESS, just return success
+    if (existing && existing.status === "IN_PROGRESS") {
       return { success: true, alreadyExists: true };
+    }
+    // If already terminal, block
+    if (existing) {
+      return { error: "تم أداء هذا الامتحان مسبقاً" };
     }
 
     // 2. Create the initialization record
