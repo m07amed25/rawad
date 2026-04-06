@@ -168,12 +168,15 @@ export default async function ExamPage({
     | "LEARNING"
     | "MULTIPLE";
 
-  // Pass startTime/createdAt to ExamClient for timer calculation
   return (
     <ExamClient
       exam={sanitizedExam}
       disabilityType={disabilityType}
-      startTime={existingResult?.createdAt ?? null}
+      startTime={
+        existingResult?.createdAt
+          ? existingResult.createdAt.toISOString()
+          : null
+      }
     />
   );
 }

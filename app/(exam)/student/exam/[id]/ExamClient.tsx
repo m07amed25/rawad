@@ -1133,9 +1133,11 @@ function AccessibilityToolbar({
 export default function ExamClient({
   exam,
   disabilityType = "NONE",
+  startTime = null,
 }: {
   exam: SanitizedExamData;
   disabilityType?: DisabilityType;
+  startTime?: string | null;
 }) {
   const { questions } = exam;
   const totalQuestions = questions.length;
@@ -1148,23 +1150,30 @@ export default function ExamClient({
     () => false,
   );
 
-  // ── Accessibility state ────────────────────────────────────────────────────
-  // fontSizeMultiplier: scales question text (1 = normal, max 1.5, min 0.8)
   const [fontSizeMultiplier, setFontSizeMultiplier] = useState(1);
   // highContrastMode: toggles high-contrast colour scheme for readability
   const [highContrastMode, setHighContrastMode] = useState(false);
   const [isSubmitting, startSubmitTransition] = useTransition();
   const router = useRouter();
 
-  // ── Core state via useReducer ──────────────────────────────────────────────
-  const [state, dispatch] = useReducer(examReducer, {
-    currentIndex: 0,
-    answers: {},
-    flagged: new Set<string>(),
-    submitted: false,
-    autoSaveStatus: "idle",
-    tabSwitchCount: 0,
-    timeLeftSeconds: exam.durationMinutes * 60,
+  const [state, dispatch] = useReducer(examReducer, undefined, (): ExamState => {
+    const totalSeconds = exam.durationMinutes * 60;
+    let initialTimeLeft = totalSeconds;
+    if (startTime) {
+      const startedAt = new Date(startTime).getTime();
+      const now = Date.now();
+      const elapsed = Math.floor((now - startedAt) / 1000);
+      initialTimeLeft = Math.max(0, totalSeconds - elapsed);
+    }
+    return {
+      currentIndex: 0,
+      answers: {},
+      flagged: new Set<string>(),
+      submitted: false,
+      autoSaveStatus: "idle",
+      tabSwitchCount: 0,
+      timeLeftSeconds: initialTimeLeft,
+    };
   });
 
   const {
