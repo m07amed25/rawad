@@ -437,3 +437,58 @@ export async function updateExam(data: z.infer<typeof UpdateExamSchema>) {
     return { error: "حدث خطأ أثناء تعديل الامتحان، يرجى المحاولة لاحقاً" };
   }
 }
+
+/**
+ * ─── Start Exam Attempt Action ──────────────────────────────────
+ * Called when a student clicks "Start Exam". Initializes a Result record.
+ * This ensures the Teacher's Live Monitor sees the student as "In Progress"
+ * the moment they enter.
+ */
+export async function startExamAttempt(examId: string) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user || session.user.role !== "STUDENT") {
+    return { error: "غير مصرح لك" };
+  }
+
+  const studentId = session.user.id;
+
+  try {
+    // 1. Check if a Result already exists for this attempt
+    // We only care about non-archived results for the current session.
+    const existing = await prisma.result.findFirst({
+      where: {
+        examId,
+        studentId,
+        isArchived: false,
+      },
+    });
+
+    if (existing) {
+      return { success: true, alreadyExists: true };
+    }
+
+    // 2. Create the initialization record
+    // Note: we set score/marks to 0 initially.
+    await prisma.result.create({
+      data: {
+        examId,
+        studentId,
+        status: "IN_PROGRESS",
+        score: 0,
+        maxScore: 0,
+        correctAnswers: 0,
+        wrongAnswers: 0,
+        timeTaken: 0,
+        isArchived: false,
+      },
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error("[startExamAttempt] Error:", error);
+    return { error: "فشل استهلال محاولة الامتحان" };
+  }
+}

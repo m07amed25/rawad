@@ -33,7 +33,7 @@ import { gradeEssayQuestion } from "@/app/actions/grading";
 
 // ─── Types ───────────────────────────────────────────────────
 
-type ResultStatus = "PASSED" | "FAILED" | "UNDER_GRADING";
+type ResultStatus = "PASSED" | "FAILED" | "UNDER_GRADING" | "IN_PROGRESS";
 
 interface OptionData {
   id: string;
@@ -98,6 +98,16 @@ function StatusBadge({ status }: { status: ResultStatus }) {
       </Badge>
     );
   }
+  if (status === "IN_PROGRESS") {
+    return (
+      <Badge
+        variant="outline"
+        className="bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+      >
+        يؤدي الامتحان حالياً
+      </Badge>
+    );
+  }
   return (
     <Badge
       variant="outline"
@@ -107,8 +117,6 @@ function StatusBadge({ status }: { status: ResultStatus }) {
     </Badge>
   );
 }
-
-// ─── Essay Grading Input ─────────────────────────────────────
 
 function EssayGradeInput({
   answerId,
@@ -291,7 +299,9 @@ export default function AnswerPreviewClient({
                       ? "text-emerald-600"
                       : result.status === "UNDER_GRADING"
                         ? "text-amber-600"
-                        : "text-red-600",
+                        : result.status === "IN_PROGRESS"
+                          ? "text-blue-600"
+                          : "text-red-600",
                   )}
                 >
                   ({percentage}%)

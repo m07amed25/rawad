@@ -65,7 +65,7 @@ export default async function ExamDetailResultsPage({
     maxScore: r.maxScore,
     timeTaken: r.timeTaken,
     violationsCount: r.violationsCount,
-    status: r.status as "PASSED" | "FAILED" | "UNDER_GRADING",
+    status: r.status as "PASSED" | "FAILED" | "UNDER_GRADING" | "IN_PROGRESS",
     isArchived: r.isArchived,
     submittedAt: new Date(r.createdAt).toLocaleDateString("ar-SA", {
       year: "numeric",

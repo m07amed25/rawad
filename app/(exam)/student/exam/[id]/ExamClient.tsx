@@ -59,6 +59,7 @@ import {
 import { cn } from "@/lib/utils";
 import { submitExam } from "@/app/actions/grading";
 import { reportCheatViolation } from "@/app/actions/proctoring";
+import { startExamAttempt } from "@/app/actions/exams";
 import {
   Dialog,
   DialogContent,
@@ -1206,17 +1207,28 @@ export default function ExamClient({
   // Handle "Start Exam in Fullscreen" button
   const handleStartExam = useCallback(async () => {
     try {
+      // 1. Initialize the exam attempt in the database
+      // Using toast.promise to manage the async state visually
+      await toast.promise(startExamAttempt(exam.id), {
+        loading: "جارٍ استهلال الامتحان...",
+        success: (result) => {
+          if (result?.error) throw new Error(result.error);
+          return "تم استهلال الامتحان بنجاح";
+        },
+        error: (err) =>
+          err.message || "فشل بدء الامتحان، يرجى المحاولة مرة أخرى",
+      });
+
+      // 2. Request fullscreen and start the timer
       await document.documentElement.requestFullscreen();
       setExamStarted(true);
-    } catch {
-      toast.error(
-        "لم يتمكن المتصفح من تفعيل وضع ملء الشاشة. يرجى المحاولة مرة أخرى.",
-      );
+    } catch (error: unknown) {
+      console.error("[handleStartExam] Error:", error);
+      // Success/Error logic is handled by toast.promise, but we catch
+      // to avoid requestFullscreen if the server action fails.
     }
-  }, []);
+  }, [exam.id]);
 
-  // ── Audio keyboard navigation (VISUAL disability only) ─────────────────────
-  // Refs so the keydown handler never captures stale values.
   const currentQuestionRef = useRef(currentQuestion);
   const currentAnswerRef = useRef(answers[currentQuestion.id] ?? "");
   useEffect(() => {

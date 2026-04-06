@@ -1018,7 +1018,11 @@ export default function CreateExamPage({
                           onValueChange={(val) => field.onChange(val)}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="اختر المادة" />
+                            <SelectValue placeholder="اختر المادة">
+                              {subjects.find((s) => s.id === field.value)
+                                ? `${subjects.find((s) => s.id === field.value)?.name} — ${subjects.find((s) => s.id === field.value)?.academicYear}`
+                                : undefined}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {subjects.map((s) => (

@@ -39,6 +39,7 @@ enum ResultStatus {
   PASSED
   FAILED
   UNDER_GRADING
+  IN_PROGRESS
 }
 
 enum VerificationStatus {
@@ -47,7 +48,6 @@ enum VerificationStatus {
   REJECTED
 }
 
-// ─── Better-Auth Base Models ─────────────────────────────────────────────────
 
 model User {
   id            String   @id @default(uuid())

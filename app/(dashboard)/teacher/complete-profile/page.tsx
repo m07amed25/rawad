@@ -1,7 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { completeTeacherProfile } from "@/app/actions/teacher";
+import { UNIVERSITIES, FACULTIES } from "@/constants/academic-data";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import {
   GraduationCap,
   Building2,
@@ -13,38 +16,49 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 
+type FormValues = {
+  universityName: { selected: string; custom?: string };
+  college: { selected: string; custom?: string };
+  department: string;
+};
+
 export default function TeacherCompleteProfilePage() {
-  const [universityName, setUniversityName] = useState("");
-  const [college, setCollege] = useState("");
-  const [department, setDepartment] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const {
+    setValue,
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<FormValues>({
+    defaultValues: {
+      universityName: { selected: "", custom: "" },
+      college: { selected: "", custom: "" },
+      department: "",
+    },
+  });
+
+  const universityName = useWatch({ control, name: "universityName" });
+  const college = useWatch({ control, name: "college" });
+  const department = useWatch({ control, name: "department" });
 
   const canSubmit =
-    universityName.trim().length >= 2 && department.trim().length >= 2;
+    universityName.selected !== "" && department.trim().length >= 2;
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!canSubmit) return;
-
-    setError("");
-    setLoading(true);
-
+  async function onSubmit(data: FormValues) {
     try {
       const result = await completeTeacherProfile({
-        universityName: universityName.trim(),
-        college: college.trim() || undefined,
-        department: department.trim(),
+        universityName: data.universityName,
+        college: data.college,
+        department: data.department.trim(),
       });
 
       if (result?.error) {
-        setError(result.error);
-        setLoading(false);
+        setError("root", { message: result.error });
       }
-      // On success, the server action redirects — no client handling needed
     } catch {
-      setError("حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.");
-      setLoading(false);
+      setError("root", {
+        message: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى.",
+      });
     }
   }
 
@@ -103,12 +117,15 @@ export default function TeacherCompleteProfilePage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="px-6 sm:px-8 py-7 space-y-5">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="px-6 sm:px-8 py-7 space-y-5"
+          >
             {/* Error */}
-            {error && (
+            {errors.root && (
               <div className="flex items-center gap-2.5 p-3.5 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-xl text-sm text-red-700 dark:text-red-300">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
+                <span>{errors.root.message}</span>
               </div>
             )}
 
@@ -119,14 +136,33 @@ export default function TeacherCompleteProfilePage() {
                 الجامعة
                 <span className="text-red-400">*</span>
               </label>
-              <input
-                type="text"
-                value={universityName}
-                onChange={(e) => setUniversityName(e.target.value)}
-                placeholder="مثال: جامعة المنصورة"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-border bg-gray-50/50 dark:bg-muted/30 text-sm text-gray-800 dark:text-foreground placeholder:text-gray-400 dark:placeholder:text-muted-foreground focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/40 focus:bg-white dark:focus:bg-background transition-all"
-                disabled={loading}
+              <SearchableSelect
+                options={UNIVERSITIES}
+                value={universityName.selected}
+                onChange={(val) =>
+                  setValue("universityName", {
+                    selected: val,
+                    custom: universityName.custom,
+                  })
+                }
+                customValue={universityName.custom}
+                onCustomValueChange={(val) =>
+                  setValue("universityName", {
+                    selected: universityName.selected,
+                    custom: val,
+                  })
+                }
+                placeholder="ابحث عن جامعتك..."
+                searchPlaceholder="اكتب اسم الجامعة..."
+                otherPlaceholder="أدخل اسم الجامعة"
+                hasError={!!errors.universityName}
+                disabled={isSubmitting}
               />
+              {errors.universityName && (
+                <p className="text-xs text-red-500">
+                  {(errors.universityName as any).message}
+                </p>
+              )}
             </div>
 
             {/* College */}
@@ -138,13 +174,27 @@ export default function TeacherCompleteProfilePage() {
                   (اختياري)
                 </span>
               </label>
-              <input
-                type="text"
-                value={college}
-                onChange={(e) => setCollege(e.target.value)}
-                placeholder="مثال: كلية التجارة"
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-border bg-gray-50/50 dark:bg-muted/30 text-sm text-gray-800 dark:text-foreground placeholder:text-gray-400 dark:placeholder:text-muted-foreground focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/40 focus:bg-white dark:focus:bg-background transition-all"
-                disabled={loading}
+              <SearchableSelect
+                options={FACULTIES}
+                value={college.selected}
+                onChange={(val) =>
+                  setValue("college", {
+                    selected: val,
+                    custom: college.custom,
+                  })
+                }
+                customValue={college.custom}
+                onCustomValueChange={(val) =>
+                  setValue("college", {
+                    selected: college.selected,
+                    custom: val,
+                  })
+                }
+                placeholder="ابحث عن كليتك..."
+                searchPlaceholder="اكتب اسم الكلية..."
+                otherPlaceholder="أدخل اسم الكلية"
+                hasError={!!errors.college}
+                disabled={isSubmitting}
               />
               <p className="text-[11px] text-gray-400 dark:text-muted-foreground leading-relaxed">
                 يمكنك تركه فارغاً إذا لم يكن ذا صلة بهيكلك الأكاديمي
@@ -161,11 +211,16 @@ export default function TeacherCompleteProfilePage() {
               <input
                 type="text"
                 value={department}
-                onChange={(e) => setDepartment(e.target.value)}
+                onChange={(e) => setValue("department", e.target.value)}
                 placeholder="مثال: إدارة الأعمال"
                 className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-border bg-gray-50/50 dark:bg-muted/30 text-sm text-gray-800 dark:text-foreground placeholder:text-gray-400 dark:placeholder:text-muted-foreground focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/40 focus:bg-white dark:focus:bg-background transition-all"
-                disabled={loading}
+                disabled={isSubmitting}
               />
+              {errors.department && (
+                <p className="text-xs text-red-500">
+                  {errors.department.message}
+                </p>
+              )}
             </div>
 
             {/* Info box */}
@@ -180,10 +235,10 @@ export default function TeacherCompleteProfilePage() {
             {/* Submit */}
             <button
               type="submit"
-              disabled={!canSubmit || loading}
+              disabled={!canSubmit || isSubmitting}
               className="w-full flex items-center justify-center gap-2.5 py-3.5 rounded-xl text-sm font-bold bg-linear-to-l from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none cursor-pointer"
             >
-              {loading ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>جاري الحفظ...</span>

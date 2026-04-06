@@ -288,8 +288,21 @@ export const completeAcademicProfileSchema = z.object({
   }),
 });
 
+export const completeTeacherProfileSchema = z.object({
+  universityName: universityField,
+  college: facultyField,
+  department: z
+    .string()
+    .trim()
+    .min(2, "يرجى إدخال اسم القسم الأكاديمي")
+    .max(150, "اسم القسم طويل جداً"),
+});
+
 export type StudentProfileInput = z.infer<typeof studentProfileSchema>;
 export type TeacherProfileInput = z.infer<typeof teacherProfileSchema>;
 export type CompleteAcademicProfileInput = z.infer<
   typeof completeAcademicProfileSchema
+>;
+export type CompleteTeacherProfileInput = z.infer<
+  typeof completeTeacherProfileSchema
 >;

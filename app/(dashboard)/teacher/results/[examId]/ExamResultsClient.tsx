@@ -53,7 +53,7 @@ import { useRouter } from "next/navigation";
 
 // ─── Types ───────────────────────────────────────────────────
 
-type ResultStatus = "PASSED" | "FAILED" | "UNDER_GRADING";
+type ResultStatus = "PASSED" | "FAILED" | "UNDER_GRADING" | "IN_PROGRESS";
 
 interface StudentResult {
   id: string;
@@ -97,6 +97,16 @@ function StatusBadge({ status }: { status: ResultStatus }) {
         className="bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
       >
         قيد التصحيح
+      </Badge>
+    );
+  }
+  if (status === "IN_PROGRESS") {
+    return (
+      <Badge
+        variant="outline"
+        className="bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+      >
+        يؤدي الامتحان
       </Badge>
     );
   }
@@ -146,15 +156,16 @@ export default function ExamResultsClient({
   );
 
   const analytics = useMemo(() => {
-    if (activeResults.length === 0) {
+    const completedResults = activeResults.filter((r) => r.status !== "IN_PROGRESS");
+    if (completedResults.length === 0) {
       return { total: 0, passRate: 0, avgScore: 0, highest: 0 };
     }
-    const scores = activeResults.map((r) => r.score);
-    const passed = activeResults.filter((r) => r.status === "PASSED").length;
+    const scores = completedResults.map((r) => r.score);
+    const passedLength = completedResults.filter((r) => r.status === "PASSED").length;
     const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
     return {
       total: activeResults.length,
-      passRate: Math.round((passed / activeResults.length) * 100),
+      passRate: Math.round((passedLength / completedResults.length) * 100),
       avgScore: Math.round(avg * 10) / 10,
       highest: Math.max(...scores),
     };

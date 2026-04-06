@@ -77,7 +77,6 @@ export default async function StudentAnswerPreviewPage({
     },
   });
 
-  // Build answer map: questionId → answer
   const answerMap = new Map(studentAnswers.map((a) => [a.questionId, a]));
 
   const questionsWithAnswers = exam.questions.map((q) => {
@@ -116,7 +115,7 @@ export default async function StudentAnswerPreviewPage({
         maxScore: result.maxScore,
         timeTaken: result.timeTaken,
         violationsCount: result.violationsCount,
-        status: result.status as "PASSED" | "FAILED" | "UNDER_GRADING",
+        status: result.status as "PASSED" | "FAILED" | "UNDER_GRADING" | "IN_PROGRESS",
         submittedAt: new Date(result.createdAt).toLocaleDateString("ar-SA", {
           year: "numeric",
           month: "short",

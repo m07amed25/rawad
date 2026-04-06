@@ -43,7 +43,7 @@ import {
 
 // ─── Types ───────────────────────────────────────────────────
 
-type ResultStatus = "PASSED" | "FAILED" | "UNDER_GRADING";
+type ResultStatus = "PASSED" | "FAILED" | "UNDER_GRADING" | "IN_PROGRESS";
 
 export interface TeacherResultExam {
   id: string;
@@ -72,24 +72,23 @@ interface ExamAnalytics {
 
 // ─── Helpers ─────────────────────────────────────────────────
 
-function computeAnalytics(
-  results: TeacherStudentResult[],
-): ExamAnalytics {
-  if (results.length === 0) {
+function computeAnalytics(results: TeacherStudentResult[]): ExamAnalytics {
+  const completedResults = results.filter((r) => r.status !== "IN_PROGRESS");
+  if (completedResults.length === 0) {
     return {
-      totalSubmissions: 0,
+      totalSubmissions: results.length, // Show total including in-progress in the count card
       passRate: 0,
       averageScore: 0,
       highestScore: 0,
     };
   }
-  const scores = results.map((r) => r.score);
-  const passed = results.filter((r) => r.status === "PASSED").length;
+  const scores = completedResults.map((r) => r.score);
+  const passed = completedResults.filter((r) => r.status === "PASSED").length;
   const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
 
   return {
     totalSubmissions: results.length,
-    passRate: Math.round((passed / results.length) * 100),
+    passRate: Math.round((passed / completedResults.length) * 100),
     averageScore: Math.round(avg * 10) / 10,
     highestScore: Math.max(...scores),
   };
@@ -115,6 +114,16 @@ function StatusBadge({ status }: { status: ResultStatus }) {
         className="bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300"
       >
         قيد التصحيح
+      </Badge>
+    );
+  }
+  if (status === "IN_PROGRESS") {
+    return (
+      <Badge
+        variant="outline"
+        className="bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300"
+      >
+        يؤدي الامتحان
       </Badge>
     );
   }
@@ -148,9 +157,7 @@ export default function TeacherResultsClient({
   // Results for the selected exam
   const examResults = useMemo(
     () =>
-      selectedExamId
-        ? results.filter((r) => r.examId === selectedExamId)
-        : [],
+      selectedExamId ? results.filter((r) => r.examId === selectedExamId) : [],
     [results, selectedExamId],
   );
 
@@ -167,10 +174,7 @@ export default function TeacherResultsClient({
 
   // Analytics
   const analytics = useMemo(
-    () =>
-      selectedExam
-        ? computeAnalytics(examResults)
-        : null,
+    () => (selectedExam ? computeAnalytics(examResults) : null),
     [examResults, selectedExam],
   );
 
@@ -338,9 +342,7 @@ export default function TeacherResultsClient({
                   filteredResults.map((result) => {
                     const percentage =
                       result.maxScore > 0
-                        ? Math.round(
-                            (result.score / result.maxScore) * 100,
-                          )
+                        ? Math.round((result.score / result.maxScore) * 100)
                         : 0;
 
                     return (

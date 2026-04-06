@@ -6,33 +6,11 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-
-// ─── Validation ──────────────────────────────────────────────
-
-const completeTeacherProfileSchema = z.object({
-  universityName: z
-    .string()
-    .trim()
-    .min(2, "يرجى إدخال اسم الجامعة")
-    .max(150, "اسم الجامعة طويل جداً"),
-  college: z
-    .string()
-    .trim()
-    .max(150, "اسم الكلية طويل جداً")
-    .optional()
-    .transform((v) => (v === "" ? undefined : v)),
-  department: z
-    .string()
-    .trim()
-    .min(2, "يرجى إدخال اسم القسم الأكاديمي")
-    .max(150, "اسم القسم طويل جداً"),
-});
-
-// ─── Complete Teacher Profile ────────────────────────────────
+import { completeTeacherProfileSchema } from "@/lib/validations";
 
 export async function completeTeacherProfile(formData: {
-  universityName: string;
-  college?: string;
+  universityName: { selected: string; custom?: string };
+  college: { selected: string; custom?: string };
   department: string;
 }) {
   const session = await auth.api.getSession({
@@ -67,8 +45,6 @@ export async function completeTeacherProfile(formData: {
 
   redirect("/teacher");
 }
-
-// ─── Get Students For Teacher ────────────────────────────────
 
 export async function getStudentsForTeacher(teacherId: string) {
   const teacher = await prisma.user.findUnique({

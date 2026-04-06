@@ -2,6 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
+import { ResultStatus } from "@prisma/client";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(
   req: NextRequest,
@@ -103,9 +106,15 @@ export async function GET(
         student.maxScore = result.maxScore;
         student.timeTaken = result.timeTaken;
 
-        if (result.status === "PASSED" || result.status === "FAILED") {
+        if (
+          result.status === ResultStatus.PASSED ||
+          result.status === ResultStatus.FAILED
+        ) {
           student.status = "SUBMITTED";
-        } else if (result.status === "UNDER_GRADING") {
+        } else if (
+          result.status === ResultStatus.UNDER_GRADING ||
+          result.status === ResultStatus.IN_PROGRESS
+        ) {
           student.status = "IN_PROGRESS";
         }
       }

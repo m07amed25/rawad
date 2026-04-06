@@ -66,9 +66,10 @@ export function SearchableSelect({
       .trim();
 
   const filtered = React.useMemo(() => {
-    if (!query) return [...options];
+    const uniqueOptions = Array.from(new Set(options));
+    if (!query) return uniqueOptions;
     const q = normalise(query);
-    return options.filter((opt) => normalise(opt).includes(q));
+    return uniqueOptions.filter((opt) => normalise(opt).includes(q));
   }, [options, query]);
 
   const displayValue = isOther
@@ -112,7 +113,7 @@ export function SearchableSelect({
             side="bottom"
             align="start"
             sideOffset={4}
-            className="isolate z-50 w-[var(--anchor-width)]"
+            className="isolate z-50 w-(--anchor-width)"
           >
             <PopoverPrimitive.Popup
               className={cn(

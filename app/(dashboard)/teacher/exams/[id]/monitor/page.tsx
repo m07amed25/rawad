@@ -96,7 +96,10 @@ export default async function ExamMonitorPage({
 
       if (result.status === "PASSED" || result.status === "FAILED") {
         student.status = "SUBMITTED";
-      } else if (result.status === "UNDER_GRADING") {
+      } else if (
+        result.status === "UNDER_GRADING" ||
+        result.status === "IN_PROGRESS"
+      ) {
         student.status = "IN_PROGRESS";
       }
     }
@@ -113,7 +116,6 @@ export default async function ExamMonitorPage({
     submitted: initialStudents.filter((s) => s.status === "SUBMITTED").length,
   };
 
-  // 4. Build activity log
   const initialActivity = exam.results
     .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, 20)
