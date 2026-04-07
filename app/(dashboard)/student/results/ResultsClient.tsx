@@ -36,8 +36,6 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 
-// ── Types ──────────────────────────────────────────────────────────────────
-
 type ResultStatus = "passed" | "failed" | "grading" | "in_progress";
 
 export interface ResultData {
@@ -52,8 +50,6 @@ export interface ResultData {
   wrongAnswers: number;
   duration: string;
 }
-
-// ── Subject Config ─────────────────────────────────────────────────────────
 
 const subjectConfig = [
   {

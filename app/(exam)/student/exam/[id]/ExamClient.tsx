@@ -1144,6 +1144,7 @@ export default function ExamClient({
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [lastSeenMessageId, setLastSeenMessageId] = useState<string | null>(null);
   const isMounted = useSyncExternalStore(
     () => () => {},
     () => true,
@@ -1405,6 +1406,35 @@ export default function ExamClient({
     handleTeacherMessage,
     handleForceEnd,
   );
+
+  // Poll for announcements every 15 seconds
+  useEffect(() => {
+    if (!examStarted || submitted) return;
+
+    const fetchLatestAnnouncement = async () => {
+      try {
+        const res = await fetch(`/api/exams/${exam.id}/announcements`);
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data && data.id && data.id !== lastSeenMessageId) {
+          setLastSeenMessageId(data.id);
+          toast.info("تنبيه هام من مراقب الامتحان", {
+            description: data.message,
+            duration: 10000,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch announcements:", error);
+      }
+    };
+
+    const intervalId = setInterval(fetchLatestAnnouncement, 15000);
+    
+    // Cleanup function that stops the interval when the component unmounts 
+    // or when the dependencies (like `submitted`) change.
+    return () => clearInterval(intervalId);
+  }, [exam.id, examStarted, submitted, lastSeenMessageId]);
 
   const {
     formatted: timerText,
