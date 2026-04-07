@@ -326,6 +326,7 @@ function useProctoring(
   examId: string,
   enabled: boolean,
   setFullscreenOverlay: (show: boolean) => void,
+  isSubmittingRef?: React.MutableRefObject<boolean>,
 ) {
   const lastReportedRef = useRef<Record<string, number>>({});
 
@@ -362,6 +363,11 @@ function useProctoring(
     };
 
     const handleFullscreenChange = () => {
+      // If we are intentionally submitting, skip violation
+      if (isSubmittingRef?.current) {
+        // Do not log violation, do not show overlay
+        return;
+      }
       if (!document.fullscreenElement) {
         reportViolation("EXITED_FULLSCREEN");
         setFullscreenOverlay(true);
@@ -406,7 +412,7 @@ function useProctoring(
       document.removeEventListener("cut", handleCut);
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [enabled, reportViolation, setFullscreenOverlay]);
+  }, [enabled, reportViolation, setFullscreenOverlay, isSubmittingRef]);
 }
 
 function useBeforeUnload(enabled: boolean) {
@@ -418,9 +424,6 @@ function useBeforeUnload(enabled: boolean) {
   }, [enabled]);
 }
 
-/**
- * useTeacherSync — Polls the server for broadcast messages and force-end status.
- */
 function useTeacherSync(
   examId: string,
   enabled: boolean,
@@ -474,8 +477,6 @@ function useTeacherSync(
   }, [examId, enabled, onMessage, onForceEnd]);
 }
 
-// ─── speakText — Arabic TTS via native SpeechSynthesis API ──────────────────
-
 /**
  * Speaks the given text aloud using the browser's native SpeechSynthesis API.
  * Configured for Arabic (ar-SA). Cancels any ongoing speech before starting.
@@ -486,12 +487,11 @@ function speakText(text: string) {
 
   const synth = window.speechSynthesis;
 
-  // Cancel any currently-playing speech to avoid overlap
   synth.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "ar-SA"; // Arabic (Saudi Arabia)
-  utterance.rate = 0.9; // Slightly slower for clarity
+  utterance.rate = 0.9;
   utterance.pitch = 1;
 
   // Try to pick an Arabic voice if available
@@ -1156,25 +1156,29 @@ export default function ExamClient({
   const [isSubmitting, startSubmitTransition] = useTransition();
   const router = useRouter();
 
-  const [state, dispatch] = useReducer(examReducer, undefined, (): ExamState => {
-    const totalSeconds = exam.durationMinutes * 60;
-    let initialTimeLeft = totalSeconds;
-    if (startTime) {
-      const startedAt = new Date(startTime).getTime();
-      const now = Date.now();
-      const elapsed = Math.floor((now - startedAt) / 1000);
-      initialTimeLeft = Math.max(0, totalSeconds - elapsed);
-    }
-    return {
-      currentIndex: 0,
-      answers: {},
-      flagged: new Set<string>(),
-      submitted: false,
-      autoSaveStatus: "idle",
-      tabSwitchCount: 0,
-      timeLeftSeconds: initialTimeLeft,
-    };
-  });
+  const [state, dispatch] = useReducer(
+    examReducer,
+    undefined,
+    (): ExamState => {
+      const totalSeconds = exam.durationMinutes * 60;
+      let initialTimeLeft = totalSeconds;
+      if (startTime) {
+        const startedAt = new Date(startTime).getTime();
+        const now = Date.now();
+        const elapsed = Math.floor((now - startedAt) / 1000);
+        initialTimeLeft = Math.max(0, totalSeconds - elapsed);
+      }
+      return {
+        currentIndex: 0,
+        answers: {},
+        flagged: new Set<string>(),
+        submitted: false,
+        autoSaveStatus: "idle",
+        tabSwitchCount: 0,
+        timeLeftSeconds: initialTimeLeft,
+      };
+    },
+  );
 
   const {
     currentIndex,
@@ -1203,11 +1207,15 @@ export default function ExamClient({
   const [showFullscreenOverlay, setShowFullscreenOverlay] = useState(false);
 
   const { isFullscreen, enterFullscreen, exitFullscreen } = useFullscreen();
+  // Safe Exit Ref for intentional submission
+  const isSubmittingRef = useRef(false);
+
   useProctoring(
     dispatch,
     exam.id,
     examStarted && !submitted,
     setShowFullscreenOverlay,
+    isSubmittingRef,
   );
   useBeforeUnload(examStarted && !submitted);
 
@@ -1308,7 +1316,13 @@ export default function ExamClient({
   );
   const handleSubmit = useCallback(() => {
     setShowSubmitDialog(false);
-    exitFullscreen();
+    // Raise the safe exit flag
+    isSubmittingRef.current = true;
+
+    // Gracefully exit fullscreen if active
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch((err) => console.log(err));
+    }
 
     startSubmitTransition(async () => {
       // Build the payload from answers state
@@ -1340,6 +1354,8 @@ export default function ExamClient({
 
       if (result.error) {
         toast.error(result.error);
+        // Lower the safe exit flag if submission failed
+        isSubmittingRef.current = false;
         return;
       }
 
@@ -1350,7 +1366,6 @@ export default function ExamClient({
       router.push("/student");
     });
   }, [
-    exitFullscreen,
     questions,
     answers,
     exam.id,
@@ -1358,6 +1373,7 @@ export default function ExamClient({
     timeLeftSeconds,
     tabSwitchCount,
     router,
+    isSubmittingRef,
   ]);
 
   // Sync with teacher broadcast and invigilation actions

@@ -80,7 +80,6 @@ export default async function ExamPage({
     );
   }
 
-  // ── 3. Verify student is allowed to take this exam ──────────
   const exam = await prisma.exam.findUnique({
     where: {
       id: examId,
@@ -159,7 +158,6 @@ export default async function ExamPage({
     }),
   };
 
-  // ── 6. Get student's disability type ────────────────────────
   const disabilityType = (session.user.disabilityType ?? "NONE") as
     | "NONE"
     | "HEARING"
