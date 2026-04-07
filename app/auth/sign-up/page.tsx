@@ -475,7 +475,7 @@ export default function SignUpPage() {
               name="firstName"
               value={formData.firstName}
               onChange={handleChange}
-              placeholder="أحمد"
+              placeholder="الاسم الأول"
               errorMessage={fieldErrors.firstName}
             />
             <AuthInput
@@ -484,7 +484,7 @@ export default function SignUpPage() {
               name="middleName"
               value={formData.middleName}
               onChange={handleChange}
-              placeholder="محمد"
+              placeholder="الاسم الاوسط"
               errorMessage={fieldErrors.middleName}
             />
             <AuthInput
@@ -493,7 +493,7 @@ export default function SignUpPage() {
               name="lastName"
               value={formData.lastName}
               onChange={handleChange}
-              placeholder="علي"
+              placeholder="الاسم الاخير"
               errorMessage={fieldErrors.lastName}
             />
           </div>
@@ -521,7 +521,7 @@ export default function SignUpPage() {
               name="username"
               value={formData.username}
               onChange={handleChange}
-              placeholder="ahmed_ali"
+              placeholder="user"
               icon={<IconUser className="size-4" />}
               errorMessage={fieldErrors.username}
             />

@@ -1199,16 +1199,12 @@ export default function ExamClient({
   const isLast = currentIndex === totalQuestions - 1;
   const progressPercent = Math.round((answeredCount / totalQuestions) * 100);
 
-  // ── Hooks ──────────────────────────────────────────────────────────────────
   useAutoSave(exam.id, state, dispatch);
 
-  // Fullscreen gate state: exam only starts after student explicitly enters fullscreen
   const [examStarted, setExamStarted] = useState(false);
-  // Overlay shown when student exits fullscreen mid-exam
   const [showFullscreenOverlay, setShowFullscreenOverlay] = useState(false);
 
   const { isFullscreen, enterFullscreen, exitFullscreen } = useFullscreen();
-  // Safe Exit Ref for intentional submission
   const isSubmittingRef = useRef(false);
 
   useProctoring(
@@ -1220,16 +1216,15 @@ export default function ExamClient({
   );
   useBeforeUnload(examStarted && !submitted);
 
-  // Handle "Start Exam in Fullscreen" button
   const handleStartExam = useCallback(async () => {
     try {
       // 1. Initialize the exam attempt in the database
       // Using toast.promise to manage the async state visually
       await toast.promise(startExamAttempt(exam.id), {
-        loading: "جارٍ استهلال الامتحان...",
+        loading: "جارٍ بدأ الامتحان...",
         success: (result) => {
           if (result?.error) throw new Error(result.error);
-          return "تم استهلال الامتحان بنجاح";
+          return "تم بدء الامتحان بنجاح";
         },
         error: (err) =>
           err.message || "فشل بدء الامتحان، يرجى المحاولة مرة أخرى",
